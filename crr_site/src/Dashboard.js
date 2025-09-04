@@ -1,1 +1,0 @@
-import { getInactiveVolunteers } from '../api';
