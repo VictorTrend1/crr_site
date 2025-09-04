@@ -17,6 +17,9 @@ import AdminUserManagement from './components/AdminUserManagement';
 import OrganizerVolunteers from './components/OrganizerVolunteers';
 import Profile from './components/Profile';
 import PublicProfile from './components/PublicProfile';
+import VolunteerChoice from './components/VolunteerChoice';
+import VolunteerRegistration from './components/VolunteerRegistration';
+import VisitorRegistration from './components/VisitorRegistration';
 import { Link as RouterLink } from 'react-router-dom';
 import Link from '@mui/material/Link';
 
@@ -186,7 +189,9 @@ function App() {
           <Container sx={{ mt: { xs: 2, sm: 4 }, px: { xs: 1, sm: 2 } }}>
             <Routes>
               <Route path="/login" element={<LoginForm />} />
-              <Route path="/register" element={<RegisterForm />} />
+              <Route path="/register" element={<VolunteerChoice />} />
+              <Route path="/volunteer-registration" element={<VolunteerRegistration />} />
+              <Route path="/register-visitor" element={<VisitorRegistration />} />
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/events/:id" element={<EventDetails />} />
               <Route path="/events/code/:code/edit" element={<EventEditForm />} />

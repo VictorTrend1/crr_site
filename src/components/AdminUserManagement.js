@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Select, MenuItem, Typography, Box, CircularProgress, Alert, Card, CardContent, Grid } from '@mui/material';
-import { getUsers, updateUserRole } from '../api';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Select, MenuItem, Typography, Box, CircularProgress, Alert, Card, CardContent, Grid, Button, IconButton } from '@mui/material';
+import { Download } from '@mui/icons-material';
+import { getUsers, updateUserRole, downloadVolunteerPdf } from '../api';
 import { useAuth } from '../AuthContext';
 import AlarmIcon from './AlarmIcon';
 
@@ -34,6 +35,23 @@ export default function AdminUserManagement() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  const handleDownloadVolunteerPdf = async (userId) => {
+    try {
+      const response = await downloadVolunteerPdf(userId);
+      const blob = response.data;
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `volunteer-${userId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      setError('Eroare la descărcarea PDF-ului');
+    }
+  };
 
   useEffect(() => {
     async function fetchUsers() {
@@ -153,6 +171,7 @@ export default function AdminUserManagement() {
               <TableCell>Detasament</TableCell>
               <TableCell>Certificate</TableCell>
               <TableCell>Experiențe</TableCell>
+              <TableCell>Acțiuni</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -226,6 +245,18 @@ export default function AdminUserManagement() {
                     <Typography variant="body2" color="text.secondary">
                       -
                     </Typography>
+                  )}
+                </TableCell>
+                <TableCell>
+                  {user.volunteerPdf && (
+                    <IconButton
+                      onClick={() => handleDownloadVolunteerPdf(user.id)}
+                      color="primary"
+                      size="small"
+                      title="Descarcă PDF voluntar"
+                    >
+                      <Download />
+                    </IconButton>
                   )}
                 </TableCell>
               </TableRow>

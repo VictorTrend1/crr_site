@@ -57,3 +57,8 @@ export const getVolunteers = () => API.get('/users/volunteers');
 export const getUserEvents = (indicator) => API.get(`/users/profile/${indicator}/events`);
 export const addExperience = (type) => API.post('/users/me/experience', { type });
 export const removeExperience = (type) => API.delete(`/users/me/experience/${type}`);
+
+// Volunteer registration
+export const generateVolunteerPdf = () => API.post('/volunteer/generate-pdf', {}, { responseType: 'blob' });
+export const saveSignedPdf = (signatureData) => API.post('/volunteer/save-signed-pdf', { signature: signatureData });
+export const downloadVolunteerPdf = (userId) => API.get(`/volunteer/pdf/${userId}`, { responseType: 'blob' });
