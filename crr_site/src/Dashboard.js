@@ -1,0 +1,1 @@
+import { getInactiveVolunteers } from '../api';
