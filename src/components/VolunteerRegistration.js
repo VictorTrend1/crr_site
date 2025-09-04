@@ -40,7 +40,8 @@ export default function VolunteerRegistration() {
     dataEliberare: '',
     dataExpirare: '',
     durataContract: 'Nedeterminat',
-    esteMinor: 'Nu'
+    esteMinor: 'Nu',
+    password: ''
   });
 
   const [error, setError] = useState('');
@@ -63,7 +64,7 @@ export default function VolunteerRegistration() {
     // Validate required fields
     const requiredFields = [
       'numePrenume', 'telefon', 'email', 'localitate', 'strada', 'numar',
-      'cnp', 'serieBuletin', 'numarBuletin', 'eliberatDe', 'dataEliberare', 'dataExpirare'
+      'cnp', 'serieBuletin', 'numarBuletin', 'eliberatDe', 'dataEliberare', 'dataExpirare', 'password'
     ];
 
     const missingFields = requiredFields.filter(field => !formData[field].trim());
@@ -75,7 +76,7 @@ export default function VolunteerRegistration() {
     try {
       const res = await register({
         name: formData.numePrenume,
-        password: 'temp_password', // Will be set later
+        password: formData.password,
         role: 'Voluntar',
         isVolunteer: true,
         volunteerData: formData
@@ -86,7 +87,9 @@ export default function VolunteerRegistration() {
       setGeneratedPdf(pdfResponse.data);
       setShowSignatureDialog(true);
     } catch (err) {
-      setError(err.response?.data?.msg || 'Înregistrare eșuată');
+      console.error('Registration error:', err);
+      console.error('Error response:', err.response?.data);
+      setError(err.response?.data?.msg || err.response?.data?.error || 'Înregistrare eșuată');
     }
   };
 
@@ -126,6 +129,14 @@ export default function VolunteerRegistration() {
               type="email"
               value={formData.email}
               onChange={handleInputChange('email')}
+              fullWidth
+              required
+            />
+            <TextField
+              label="Parolă *"
+              type="password"
+              value={formData.password}
+              onChange={handleInputChange('password')}
               fullWidth
               required
             />
@@ -304,27 +315,40 @@ export default function VolunteerRegistration() {
       const result = await saveSignedPdf(signatureData);
       setSuccess(`Înregistrare completă! Indicatorul tău este: ${result.data.indicator}`);
       setShowSignatureDialog(false);
-      // Clear form
-      setFormData({
-        numePrenume: '',
-        telefon: '',
-        email: '',
-        localitate: '',
-        strada: '',
-        numar: '',
-        bloc: '',
-        scara: '',
-        etaj: '',
-        apartament: '',
-        cnp: '',
-        serieBuletin: '',
-        numarBuletin: '',
-        eliberatDe: '',
-        dataEliberare: '',
-        dataExpirare: '',
-        durataContract: 'Nedeterminat',
-        esteMinor: 'Nu'
-      });
+      
+      // Automatically download the contract
+      if (generatedPdf) {
+        const url = window.URL.createObjectURL(generatedPdf);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `contract-voluntar-${result.data.indicator}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }
+              // Clear form
+        setFormData({
+          numePrenume: '',
+          telefon: '',
+          email: '',
+          localitate: '',
+          strada: '',
+          numar: '',
+          bloc: '',
+          scara: '',
+          etaj: '',
+          apartament: '',
+          cnp: '',
+          serieBuletin: '',
+          numarBuletin: '',
+          eliberatDe: '',
+          dataEliberare: '',
+          dataExpirare: '',
+          durataContract: 'Nedeterminat',
+          esteMinor: 'Nu',
+          password: ''
+        });
     } catch (err) {
       setError(err.response?.data?.msg || 'Eroare la salvarea semnăturii');
     }

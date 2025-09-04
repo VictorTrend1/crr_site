@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, Card, CardContent, Button, Alert, CircularProgress, Select, MenuItem, FormControl, InputLabel, TextField } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-import { getUserProfile, updateMyDetasament, addCertificate, removeCertificate, downloadIndicativ, downloadIdCard, uploadPhoto, updatePersonalInfo, setup2FA, enable2FA, disable2FA, getUserEvents, downloadMyActivity, addExperience, removeExperience } from '../api';
+import { getUserProfile, updateMyDetasament, addCertificate, removeCertificate, downloadIndicativ, downloadIdCard, uploadPhoto, updatePersonalInfo, setup2FA, enable2FA, disable2FA, getUserEvents, downloadMyActivity, addExperience, removeExperience, downloadMyVolunteerContract } from '../api';
 import QRCode from 'qrcode';
 
 export default function Profile() {
@@ -330,6 +330,32 @@ export default function Profile() {
     } catch (err) {
       console.error('Error downloading activity:', err);
       setError('Eroare la descărcarea activității');
+    }
+  };
+
+  const handleDownloadContract = async () => {
+    try {
+      const response = await downloadMyVolunteerContract();
+      
+      // Create blob from response
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `contract-voluntar-${profileUser?.indicator || 'user'}.pdf`;
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error downloading contract:', err);
+      setError('Eroare la descărcarea contractului');
     }
   };
 
@@ -687,6 +713,16 @@ export default function Profile() {
                       >
                         Descarcă Ecuson
                       </Button>
+                      {profileUser.volunteerPdf && (
+                        <Button 
+                          variant="contained" 
+                          color="success"
+                          onClick={handleDownloadContract}
+                          fullWidth
+                        >
+                          Descarcă Contract
+                        </Button>
+                      )}
                     </>
                   )}
                 </Box>

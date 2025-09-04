@@ -62,3 +62,4 @@ export const removeExperience = (type) => API.delete(`/users/me/experience/${typ
 export const generateVolunteerPdf = () => API.post('/volunteer/generate-pdf', {}, { responseType: 'blob' });
 export const saveSignedPdf = (signatureData) => API.post('/volunteer/save-signed-pdf', { signature: signatureData });
 export const downloadVolunteerPdf = (userId) => API.get(`/volunteer/pdf/${userId}`, { responseType: 'blob' });
+export const downloadMyVolunteerContract = () => API.get('/volunteer/my-contract', { responseType: 'blob' });
