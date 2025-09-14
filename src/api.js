@@ -66,3 +66,6 @@ export const downloadMyVolunteerContract = () => API.get('/volunteer/my-contract
 
 // Scutire generation
 export const generateScutirePdf = (formData) => API.post('/users/me/scutire', formData, { responseType: 'blob' });
+
+// QR Code Check-in
+export const checkInWithQR = (qrData) => API.post('/events/checkin/qr', { qrData });

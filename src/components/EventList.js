@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, Typography, List, CircularProgress, Box, Button } from '@mui/material';
+import { Card, CardContent, Typography, List, CircularProgress, Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, IconButton } from '@mui/material';
 import { getEvents, deleteEvent, removeVolunteerFromEvent } from '../api';
 import { useAuth } from '../AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
+import { QrCode, LocationOn, AccessTime } from '@mui/icons-material';
+import QRCodeScanner from './QRCodeScanner';
 
 export default function EventList() {
   const { user } = useAuth();
@@ -17,6 +19,9 @@ export default function EventList() {
     const key = user ? `visibleEvents_${user.id}` : null;
     return key ? JSON.parse(localStorage.getItem(key) || '[]') : [];
   });
+  const [showQRCode, setShowQRCode] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showQRScanner, setShowQRScanner] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -95,10 +100,49 @@ export default function EventList() {
           <Card key={event._id} sx={{ mb: 2 }}>
             <CardContent>
               <Typography variant="h6">{event.title}</Typography>
-              <Typography variant="body2" color="text.secondary">{new Date(event.date).toLocaleString()}</Typography>
-              <Button component={Link} to={`/events/${event._id}`} variant="outlined" sx={{ mt: 1, mr: 1 }}>
-                Detalii
-              </Button>
+              <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                <AccessTime fontSize="small" />
+                {new Date(event.date).toLocaleString('ro-RO')}
+              </Typography>
+              {event.endDate && (
+                <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <AccessTime fontSize="small" />
+                  Până la: {new Date(event.endDate).toLocaleString('ro-RO')}
+                </Typography>
+              )}
+              {event.location && (
+                <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <LocationOn fontSize="small" />
+                  {event.location.name || event.location.address || 'Locație specificată'}
+                </Typography>
+              )}
+              {event.description && (
+                <Typography variant="body2" sx={{ mb: 2 }}>
+                  {event.description}
+                </Typography>
+              )}
+              <Box display="flex" gap={1} flexWrap="wrap">
+                <Button component={Link} to={`/events/${event._id}`} variant="outlined" size="small">
+                  Detalii
+                </Button>
+                <Button 
+                  onClick={() => { setSelectedEvent(event); setShowQRCode(true); }} 
+                  variant="outlined" 
+                  size="small"
+                  startIcon={<QrCode />}
+                >
+                  QR Code
+                </Button>
+                <Button 
+                  onClick={() => setShowQRScanner(true)} 
+                  variant="contained" 
+                  size="small"
+                  color="success"
+                  startIcon={<QrCode />}
+                >
+                  Check-in
+                </Button>
+              </Box>
               {(user.role === 'Admin' || (user.role === 'Organizator' && event.createdBy === user.id)) && (
                 <>
                   <Button onClick={() => navigate(`/events/code/${event.code}/edit`)} variant="contained" color="primary" sx={{ mt: 1, mr: 1 }}>
@@ -126,5 +170,43 @@ export default function EventList() {
         );
       })}
     </List>
+
+    {/* QR Code Display Dialog */}
+    <Dialog open={showQRCode} onClose={() => setShowQRCode(false)} maxWidth="sm" fullWidth>
+      <DialogTitle>QR Code pentru Check-in</DialogTitle>
+      <DialogContent>
+        <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
+          <Typography variant="h6">{selectedEvent?.title}</Typography>
+          <Typography variant="body2" color="text.secondary">
+            Cod eveniment: {selectedEvent?.code}
+          </Typography>
+          {selectedEvent?.qrCode && (
+            <Box>
+              <img 
+                src={selectedEvent.qrCode} 
+                alt="QR Code" 
+                style={{ maxWidth: '100%', height: 'auto' }}
+              />
+            </Box>
+          )}
+          <Typography variant="body2" color="text.secondary" textAlign="center">
+            Scanați acest QR code pentru a vă înregistra la eveniment
+          </Typography>
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setShowQRCode(false)}>Închide</Button>
+      </DialogActions>
+    </Dialog>
+
+    {/* QR Code Scanner Dialog */}
+    <QRCodeScanner
+      open={showQRScanner}
+      onClose={() => setShowQRScanner(false)}
+      onSuccess={(data) => {
+        console.log('Check-in successful:', data);
+        // Optionally refresh events or show success message
+      }}
+    />
   );
 } 
