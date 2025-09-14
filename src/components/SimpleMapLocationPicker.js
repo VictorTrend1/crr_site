@@ -4,8 +4,148 @@ import {
   Typography,
   Button,
   TextField,
-  Alert
+  Alert,
+  Menu,
+  MenuItem,
+  IconButton
 } from '@mui/material';
+import { Map as MapIcon, MoreVert as MoreVertIcon } from '@mui/icons-material';
+
+const MapAppSelector = ({ lat, lng }) => {
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const openInApp = (appType) => {
+    let url = '';
+    
+    switch (appType) {
+      case 'google':
+        url = `https://www.google.com/maps?q=${lat},${lng}`;
+        break;
+      case 'apple':
+        url = `http://maps.apple.com/?q=${lat},${lng}`;
+        break;
+      case 'waze':
+        url = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
+        break;
+      case 'osm':
+        url = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}&zoom=15`;
+        break;
+      case 'here':
+        url = `https://wego.here.com/directions/mylocation/${lat},${lng}`;
+        break;
+      default:
+        return;
+    }
+    
+    window.open(url, '_blank');
+    handleClose();
+  };
+
+  return (
+    <>
+      <IconButton
+        onClick={handleClick}
+        color="primary"
+        sx={{ 
+          border: '1px solid',
+          borderColor: 'primary.main',
+          borderRadius: 1,
+          minWidth: '120px',
+          height: '40px'
+        }}
+      >
+        <MapIcon sx={{ mr: 1 }} />
+        <Typography variant="button" sx={{ fontSize: '0.75rem' }}>
+          Deschide în hartă
+        </Typography>
+        <MoreVertIcon sx={{ ml: 1, fontSize: '1rem' }} />
+      </IconButton>
+      
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+      >
+        <MenuItem onClick={() => openInApp('google')}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Box
+              component="img"
+              src="https://maps.gstatic.com/mapfiles/api-3/images/icon_71.png"
+              alt="Google Maps"
+              sx={{ width: 20, height: 20 }}
+            />
+            Google Maps
+          </Box>
+        </MenuItem>
+        
+        <MenuItem onClick={() => openInApp('apple')}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Box
+              component="img"
+              src="https://developer.apple.com/assets/elements/icons/maps/maps-96x96_2x.png"
+              alt="Apple Maps"
+              sx={{ width: 20, height: 20 }}
+            />
+            Apple Maps
+          </Box>
+        </MenuItem>
+        
+        <MenuItem onClick={() => openInApp('waze')}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Box
+              component="img"
+              src="https://static.waze.com/static/images/favicon.ico"
+              alt="Waze"
+              sx={{ width: 20, height: 20 }}
+            />
+            Waze
+          </Box>
+        </MenuItem>
+        
+        <MenuItem onClick={() => openInApp('osm')}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Box
+              component="img"
+              src="https://www.openstreetmap.org/favicon.ico"
+              alt="OpenStreetMap"
+              sx={{ width: 20, height: 20 }}
+            />
+            OpenStreetMap
+          </Box>
+        </MenuItem>
+        
+        <MenuItem onClick={() => openInApp('here')}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Box
+              component="img"
+              src="https://wego.here.com/favicon.ico"
+              alt="HERE Maps"
+              sx={{ width: 20, height: 20 }}
+            />
+            HERE Maps
+          </Box>
+        </MenuItem>
+      </Menu>
+    </>
+  );
+};
 
 const SimpleMapLocationPicker = ({ open, onClose, onLocationSelect, initialLocation }) => {
   const [loading, setLoading] = useState(false);
@@ -143,15 +283,20 @@ const ManualLocationInput = ({ onLocationSelect }) => {
         placeholder="ex: Strada Mihai Viteazu 12, București, România"
       />
       
-      <Button
-        type="button"
-        variant="outlined"
-        onClick={handleGeocode}
-        sx={{ mb: 2 }}
-        disabled={!formData.address}
-      >
-        Obține coordonatele GPS automat
-      </Button>
+      <Box display="flex" gap={2} sx={{ mb: 2 }}>
+        <Button
+          type="button"
+          variant="outlined"
+          onClick={handleGeocode}
+          disabled={!formData.address}
+          sx={{ flex: 1 }}
+        >
+          Obține coordonatele GPS automat
+        </Button>
+        {formData.lat && formData.lng && (
+          <MapAppSelector lat={formData.lat} lng={formData.lng} />
+        )}
+      </Box>
       
       <Box display="flex" gap={2}>
         <TextField
@@ -186,9 +331,14 @@ const ManualLocationInput = ({ onLocationSelect }) => {
         </Typography>
       </Alert>
       
-      <Button type="submit" variant="contained" sx={{ mt: 2 }}>
-        Confirmă Locația
-      </Button>
+      <Box display="flex" gap={2} sx={{ mt: 2 }}>
+        <Button type="submit" variant="contained" sx={{ flex: 1 }}>
+          Confirmă Locația
+        </Button>
+        {formData.lat && formData.lng && (
+          <MapAppSelector lat={formData.lat} lng={formData.lng} />
+        )}
+      </Box>
     </Box>
   );
 };
