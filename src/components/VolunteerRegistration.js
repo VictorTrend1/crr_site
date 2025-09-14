@@ -39,7 +39,7 @@ export default function VolunteerRegistration() {
     eliberatDe: '',
     dataEliberare: '',
     dataExpirare: '',
-    durataContract: 'Nedeterminat',
+    durataContract: 'Determinat',
     esteMinor: 'Nu',
     password: ''
   });
@@ -253,17 +253,6 @@ export default function VolunteerRegistration() {
 
           <Divider sx={{ my: 2 }} />
 
-          <FormControl component="fieldset" sx={{ mb: 2 }}>
-            <FormLabel component="legend">Durata contractului</FormLabel>
-            <RadioGroup
-              value={formData.durataContract}
-              onChange={handleInputChange('durataContract')}
-              row
-            >
-              <FormControlLabel value="Nedeterminat" control={<Radio />} label="Nedeterminat" />
-              <FormControlLabel value="Determinat" control={<Radio />} label="Determinat" />
-            </RadioGroup>
-          </FormControl>
 
           <FormControl component="fieldset">
             <FormLabel component="legend">Ești minor?</FormLabel>
@@ -345,7 +334,7 @@ export default function VolunteerRegistration() {
           eliberatDe: '',
           dataEliberare: '',
           dataExpirare: '',
-          durataContract: 'Nedeterminat',
+          durataContract: 'Determinat',
           esteMinor: 'Nu',
           password: ''
         });

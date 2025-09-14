@@ -63,3 +63,6 @@ export const generateVolunteerPdf = () => API.post('/volunteer/generate-pdf', {}
 export const saveSignedPdf = (signatureData) => API.post('/volunteer/save-signed-pdf', { signature: signatureData });
 export const downloadVolunteerPdf = (userId) => API.get(`/volunteer/pdf/${userId}`, { responseType: 'blob' });
 export const downloadMyVolunteerContract = () => API.get('/volunteer/my-contract', { responseType: 'blob' });
+
+// Scutire generation
+export const generateScutirePdf = (formData) => API.post('/users/me/scutire', formData, { responseType: 'blob' });

@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { getUserProfile, updateMyDetasament, addCertificate, removeCertificate, downloadIndicativ, downloadIdCard, uploadPhoto, updatePersonalInfo, setup2FA, enable2FA, disable2FA, getUserEvents, downloadMyActivity, addExperience, removeExperience, downloadMyVolunteerContract } from '../api';
 import QRCode from 'qrcode';
+import ScutireForm from './ScutireForm';
 
 export default function Profile() {
   const { indicator } = useParams();
@@ -30,6 +31,8 @@ export default function Profile() {
   const [showPhotoUpload, setShowPhotoUpload] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [showScutireForm, setShowScutireForm] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     async function loadProfile() {
@@ -714,14 +717,25 @@ export default function Profile() {
                         Descarcă Ecuson
                       </Button>
                       {profileUser.volunteerPdf && (
-                        <Button 
-                          variant="contained" 
-                          color="success"
-                          onClick={handleDownloadContract}
-                          fullWidth
-                        >
-                          Descarcă Contract
-                        </Button>
+                        <>
+                          <Button
+                            variant="contained" 
+                            color="success"
+                            onClick={handleDownloadContract}
+                            fullWidth
+                            sx={{ mb: 1 }}
+                          >
+                            Descarcă Contract
+                          </Button>
+                          <Button
+                            variant="contained" 
+                            color="primary"
+                            onClick={() => setShowScutireForm(true)}
+                            fullWidth
+                          >
+                            Generează Scutire
+                          </Button>
+                        </>
                       )}
                     </>
                   )}
@@ -1135,6 +1149,24 @@ export default function Profile() {
           </Box>
         </Box>
       )}
+
+      {/* Success Message */}
+      {successMessage && (
+        <Alert 
+          severity="success" 
+          onClose={() => setSuccessMessage('')}
+          sx={{ position: 'fixed', top: 20, right: 20, zIndex: 9999 }}
+        >
+          {successMessage}
+        </Alert>
+      )}
+
+      {/* Scutire Form Dialog */}
+      <ScutireForm
+        open={showScutireForm}
+        onClose={() => setShowScutireForm(false)}
+        onSuccess={setSuccessMessage}
+      />
     </Box>
   );
 }
