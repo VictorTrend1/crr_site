@@ -68,7 +68,7 @@ const MapComponent = ({ onLocationSelect, initialLocation }) => {
   return <div ref={mapRef} style={{ width: '100%', height: '400px' }} />;
 };
 
-const render = (status) => {
+const render = (status, onLocationSelect) => {
   switch (status) {
     case Status.LOADING:
       return (
@@ -209,7 +209,7 @@ const GoogleMapLocationPicker = ({ open, onClose, onLocationSelect, initialLocat
         
         <Wrapper
           apiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY || 'demo-key'}
-          render={render}
+          render={(status) => render(status, handleLocationSelect)}
         >
           <MapComponent
             onLocationSelect={handleLocationSelect}
