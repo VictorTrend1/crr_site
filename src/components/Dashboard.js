@@ -36,7 +36,7 @@ export default function Dashboard() {
         {user.role === 'Voluntar' && <AlarmIcon active={inactive} message="Nu ai activitate de peste 3 luni!" />}
       </Typography>
       <Alert severity="info" sx={{ mb: 2 }}>
-        Rolul tău: <strong>{user.role}</strong> | Indicator: <strong>{user.indicator}</strong>
+        Rolul tău: <strong>{user.role}</strong> | Indicativ: <strong>{user.indicator}</strong>
       </Alert>
 
       {/* Profile section */}

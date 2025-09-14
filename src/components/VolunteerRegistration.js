@@ -313,7 +313,7 @@ export default function VolunteerRegistration() {
     try {
       // Save the signed PDF
       const result = await saveSignedPdf(signatureData);
-      setSuccess(`Înregistrare completă! Indicatorul tău este: ${result.data.indicator}`);
+      setSuccess(`Înregistrare completă! Indicativul tău este: ${result.data.indicator}`);
       setShowSignatureDialog(false);
       
       // Automatically download the contract

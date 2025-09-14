@@ -52,7 +52,7 @@ export default function LoginForm() {
       <form onSubmit={handleSubmit}>
         {!requires2FA && (
           <>
-            <TextField label="Indicator (CRDB00000)" fullWidth margin="normal" value={indicator} onChange={e => setIndicator(e.target.value)} required />
+            <TextField label="Indicativ (CRDB00000)" fullWidth margin="normal" value={indicator} onChange={e => setIndicator(e.target.value)} required />
             <TextField label="Parolă" type="password" fullWidth margin="normal" value={password} onChange={e => setPassword(e.target.value)} required />
           </>
         )}

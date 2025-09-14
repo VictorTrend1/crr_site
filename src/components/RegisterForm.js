@@ -16,7 +16,7 @@ export default function RegisterForm() {
     setSuccess('');
     try {
       const res = await register({ name, password });
-      setSuccess(`Înregistrare reușită! Indicatorul dvs. este: ${res.data.user.indicator}`);
+      setSuccess(`Înregistrare reușită! Indicativul dvs. este: ${res.data.user.indicator}`);
       // Clear form
       setName('');
       setPassword('');

@@ -19,7 +19,7 @@ export default function PublicProfile() {
         setError('');
         
         if (!indicator) {
-          setError('Indicatorul nu a fost găsit');
+          setError('Indicativul nu a fost găsit');
           setLoading(false);
           return;
         }
@@ -45,7 +45,7 @@ export default function PublicProfile() {
         if (err.response?.status === 404) {
           setError('Profilul nu a fost găsit');
         } else if (err.response?.status === 400) {
-          setError('Format indicator invalid');
+          setError('Format indicativ invalid');
         } else {
           setError('Eroare la încărcarea profilului');
         }
@@ -134,7 +134,7 @@ export default function PublicProfile() {
             
             <Box mb={2}>
               <Typography variant="subtitle2" color="text.secondary">
-                Indicator
+                Indicativ
               </Typography>
               <Typography variant="h5" color="primary" fontWeight="bold">
                 {profileUser.indicator}
