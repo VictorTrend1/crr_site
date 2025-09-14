@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Alert, Card, CardContent } from '@mui/material';
 import { createEvent } from '../api';
-import GoogleMapLocationPicker from './GoogleMapLocationPicker';
+import OpenStreetMapLocationPicker from './OpenStreetMapLocationPicker';
 
 import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -139,10 +139,7 @@ export default function EventCreateForm({ onCreated }) {
                   Selectează Locația pe Hartă
                 </Button>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                  {process.env.REACT_APP_GOOGLE_MAPS_API_KEY 
-                    ? "Faceți clic pentru a selecta locația evenimentului pe hartă"
-                    : "Dacă Google Maps nu este disponibil, veți putea introduce manual locația"
-                  }
+                  Faceți clic pentru a selecta locația evenimentului pe hartă (OpenStreetMap - gratuit)
                 </Typography>
               </Box>
             )}
@@ -154,8 +151,8 @@ export default function EventCreateForm({ onCreated }) {
         </Button>
       </form>
 
-      {/* Google Maps Location Picker Dialog */}
-      <GoogleMapLocationPicker
+      {/* OpenStreetMap Location Picker Dialog */}
+      <OpenStreetMapLocationPicker
         open={showMapDialog}
         onClose={() => setShowMapDialog(false)}
         onLocationSelect={handleLocationSelect}
