@@ -32,9 +32,29 @@ const OpenStreetMapLocationPicker = ({ open, onClose, onLocationSelect, initialL
           13
         );
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(newMap);
+        // Primary tile layer (CartoDB - more permissive)
+        const primaryLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          subdomains: 'abcd',
+          maxZoom: 20
+        });
+
+        // Fallback tile layer (OpenStreetMap with proper attribution)
+        const fallbackLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 19
+        });
+
+        // Try primary layer first, fallback if it fails
+        primaryLayer.addTo(newMap);
+        
+        // Add fallback layer as backup
+        primaryLayer.on('tileerror', () => {
+          if (newMap.hasLayer(primaryLayer)) {
+            newMap.removeLayer(primaryLayer);
+            fallbackLayer.addTo(newMap);
+          }
+        });
 
         // Add initial marker if location exists
         if (initialLocation) {

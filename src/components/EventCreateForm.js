@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Alert, Card, CardContent } from '@mui/material';
 import { createEvent } from '../api';
-import OpenStreetMapLocationPicker from './OpenStreetMapLocationPicker';
+import SimpleMapLocationPicker from './SimpleMapLocationPicker';
 
 import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -139,7 +139,7 @@ export default function EventCreateForm({ onCreated }) {
                   Selectează Locația pe Hartă
                 </Button>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                  Faceți clic pentru a selecta locația evenimentului pe hartă (OpenStreetMap - gratuit)
+                  Faceți clic pentru a introduce locația evenimentului (gratuit, fără API key)
                 </Typography>
               </Box>
             )}
@@ -151,8 +151,8 @@ export default function EventCreateForm({ onCreated }) {
         </Button>
       </form>
 
-      {/* OpenStreetMap Location Picker Dialog */}
-      <OpenStreetMapLocationPicker
+      {/* Simple Location Picker Dialog */}
+      <SimpleMapLocationPicker
         open={showMapDialog}
         onClose={() => setShowMapDialog(false)}
         onLocationSelect={handleLocationSelect}
