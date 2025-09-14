@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { TextField, Button, Box, Typography, Alert, Card, CardContent } from '@mui/material';
+import { TextField, Button, Box, Typography, Alert, Card, CardContent, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { createEvent } from '../api';
+import GoogleMapLocationPicker from './GoogleMapLocationPicker';
 
 import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -12,10 +13,8 @@ export default function EventCreateForm({ onCreated }) {
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [locationName, setLocationName] = useState('');
-  const [locationAddress, setLocationAddress] = useState('');
-  const [locationLat, setLocationLat] = useState('');
-  const [locationLng, setLocationLng] = useState('');
+  const [location, setLocation] = useState(null);
+  const [showMapDialog, setShowMapDialog] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -28,23 +27,23 @@ export default function EventCreateForm({ onCreated }) {
         description,
         date: date ? date.toISOString() : '',
         endDate: endDate ? endDate.toISOString() : '',
-        location: {
-          name: locationName,
-          address: locationAddress,
-          coordinates: {
-            lat: parseFloat(locationLat) || 0,
-            lng: parseFloat(locationLng) || 0
-          }
-        }
+        location: location
       };
       await createEvent(eventData);
       setSuccess('Eveniment creat cu succes!');
       setTitle(''); setDescription(''); setDate(null); setEndDate(null);
-      setLocationName(''); setLocationAddress(''); setLocationLat(''); setLocationLng('');
+      setLocation(null);
       if (onCreated) onCreated();
     } catch (err) {
       setError(err.response?.data?.msg || 'Eroare la crearea evenimentului');
     }
+  };
+
+  const handleLocationSelect = (selectedLocation) => {
+    if (selectedLocation) {
+      setLocation(selectedLocation);
+    }
+    setShowMapDialog(false);
   };
 
   return (
@@ -89,43 +88,61 @@ export default function EventCreateForm({ onCreated }) {
         <Card sx={{ mt: 2, mb: 2 }}>
           <CardContent>
             <Typography variant="h6" gutterBottom>📍 Locația evenimentului</Typography>
-            <TextField 
-              label="Numele locației" 
-              fullWidth 
-              margin="normal" 
-              value={locationName} 
-              onChange={e => setLocationName(e.target.value)} 
-              placeholder="ex: Sala de conferințe, Parcul Central"
-            />
-            <TextField 
-              label="Adresa" 
-              fullWidth 
-              margin="normal" 
-              value={locationAddress} 
-              onChange={e => setLocationAddress(e.target.value)} 
-              placeholder="ex: Strada Principală nr. 123, București"
-            />
-            <Box display="flex" gap={2} mt={2}>
-              <TextField 
-                label="Latitudine" 
-                type="number"
-                value={locationLat} 
-                onChange={e => setLocationLat(e.target.value)} 
-                placeholder="44.4268"
-                sx={{ flex: 1 }}
-              />
-              <TextField 
-                label="Longitudine" 
-                type="number"
-                value={locationLng} 
-                onChange={e => setLocationLng(e.target.value)} 
-                placeholder="26.1025"
-                sx={{ flex: 1 }}
-              />
-            </Box>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              💡 Folosește Google Maps pentru a găsi coordonatele exacte ale locației
-            </Typography>
+            
+            {location ? (
+              <Box>
+                <TextField 
+                  label="Numele locației" 
+                  fullWidth 
+                  margin="normal" 
+                  value={location.name} 
+                  disabled
+                />
+                <TextField 
+                  label="Adresa completă" 
+                  fullWidth 
+                  margin="normal" 
+                  value={location.address} 
+                  disabled
+                />
+                <Box display="flex" gap={2} mt={2}>
+                  <TextField 
+                    label="Latitudine" 
+                    type="number"
+                    value={location.lat} 
+                    disabled
+                    sx={{ flex: 1 }}
+                  />
+                  <TextField 
+                    label="Longitudine" 
+                    type="number"
+                    value={location.lng} 
+                    disabled
+                    sx={{ flex: 1 }}
+                  />
+                </Box>
+                <Button 
+                  variant="outlined" 
+                  onClick={() => setShowMapDialog(true)}
+                  sx={{ mt: 2 }}
+                >
+                  Schimbă Locația
+                </Button>
+              </Box>
+            ) : (
+              <Box textAlign="center" py={2}>
+                <Button 
+                  variant="contained" 
+                  onClick={() => setShowMapDialog(true)}
+                  size="large"
+                >
+                  Selectează Locația pe Hartă
+                </Button>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  Faceți clic pentru a selecta locația evenimentului pe hartă
+                </Typography>
+              </Box>
+            )}
           </CardContent>
         </Card>
 
@@ -133,6 +150,14 @@ export default function EventCreateForm({ onCreated }) {
           Creează Eveniment
         </Button>
       </form>
+
+      {/* Google Maps Location Picker Dialog */}
+      <GoogleMapLocationPicker
+        open={showMapDialog}
+        onClose={() => setShowMapDialog(false)}
+        onLocationSelect={handleLocationSelect}
+        initialLocation={location}
+      />
     </Box>
   );
 } 
