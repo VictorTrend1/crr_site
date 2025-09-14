@@ -717,26 +717,25 @@ export default function Profile() {
                         Descarcă Ecuson
                       </Button>
                       {profileUser.volunteerPdf && (
-                        <>
-                          <Button
-                            variant="contained" 
-                            color="success"
-                            onClick={handleDownloadContract}
-                            fullWidth
-                            sx={{ mb: 1 }}
-                          >
-                            Descarcă Contract
-                          </Button>
-                          <Button
-                            variant="contained" 
-                            color="primary"
-                            onClick={() => setShowScutireForm(true)}
-                            fullWidth
-                          >
-                            Generează Scutire
-                          </Button>
-                        </>
+                        <Button
+                          variant="contained" 
+                          color="success"
+                          onClick={handleDownloadContract}
+                          fullWidth
+                          sx={{ mb: 1 }}
+                        >
+                          Descarcă Contract
+                        </Button>
                       )}
+                      <Button
+                        variant="contained" 
+                        color="primary"
+                        onClick={() => setShowScutireForm(true)}
+                        fullWidth
+                        sx={{ mb: 1 }}
+                      >
+                        Generează Scutire
+                      </Button>
                     </>
                   )}
                 </Box>
