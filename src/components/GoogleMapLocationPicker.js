@@ -69,6 +69,18 @@ const MapComponent = ({ onLocationSelect, initialLocation }) => {
 };
 
 const render = (status, onLocationSelect) => {
+  // Check if API key is available
+  if (!process.env.REACT_APP_GOOGLE_MAPS_API_KEY) {
+    return (
+      <Box textAlign="center" py={4}>
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          Google Maps API key nu este configurat. Vă rugăm să introduceți manual locația.
+        </Alert>
+        <ManualLocationInput onLocationSelect={onLocationSelect} />
+      </Box>
+    );
+  }
+
   switch (status) {
     case Status.LOADING:
       return (
@@ -208,7 +220,7 @@ const GoogleMapLocationPicker = ({ open, onClose, onLocationSelect, initialLocat
         </Typography>
         
         <Wrapper
-          apiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY || 'demo-key'}
+          apiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY || ''}
           render={(status) => render(status, handleLocationSelect)}
         >
           <MapComponent

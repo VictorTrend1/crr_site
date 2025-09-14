@@ -139,7 +139,10 @@ export default function EventCreateForm({ onCreated }) {
                   Selectează Locația pe Hartă
                 </Button>
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                  Faceți clic pentru a selecta locația evenimentului pe hartă
+                  {process.env.REACT_APP_GOOGLE_MAPS_API_KEY 
+                    ? "Faceți clic pentru a selecta locația evenimentului pe hartă"
+                    : "Dacă Google Maps nu este disponibil, veți putea introduce manual locația"
+                  }
                 </Typography>
               </Box>
             )}
