@@ -78,16 +78,25 @@ const QRCodeScanner = ({ open, onClose, onSuccess }) => {
       
       const response = await checkInWithQR(qrData);
       
-      setSuccess(response.data.msg);
+      // Show different success messages based on the response
+      if (response.data.autoRegistered) {
+        setSuccess('Te-ai înregistrat automat la eveniment!');
+      } else if (response.data.completedPartialRegistration) {
+        setSuccess('Înregistrarea a fost completată cu succes!');
+      } else if (response.data.wasAlreadyRegistered) {
+        setSuccess('Erai deja înregistrat la acest eveniment!');
+      } else {
+        setSuccess(response.data.msg);
+      }
       
       if (onSuccess) {
         onSuccess(response.data);
       }
       
-      // Close dialog after 2 seconds
+      // Close dialog after 3 seconds
       setTimeout(() => {
         handleClose();
-      }, 2000);
+      }, 3000);
       
     } catch (err) {
       setError(err.response?.data?.msg || 'Eroare la procesarea QR code-ului');

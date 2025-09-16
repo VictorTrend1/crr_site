@@ -201,12 +201,7 @@ export default function Profile() {
 
   const handleDownloadIdCard = async () => {
     try {
-      // Check if user has a photo, if not show upload modal
-      if (!profileUser.photo) {
-        setShowPhotoUpload(true);
-        return;
-      }
-      
+      // No photo requirement - directly download the ID card
       const response = await downloadIdCard();
       
       // Create blob from response

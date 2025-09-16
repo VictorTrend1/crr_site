@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { getEventDetails, removeVolunteerFromEvent, addEventAdmin, removeEventAdmin } from '../api';
 import { useAuth } from '../AuthContext';
 import { Box, Typography, Avatar, Chip, List, ListItem, ListItemAvatar, ListItemText, CircularProgress, Alert, Button } from '@mui/material';
+import { Navigation } from '@mui/icons-material';
 
 export default function EventDetails() {
   const { id } = useParams();
@@ -49,6 +50,57 @@ export default function EventDetails() {
     }
   };
 
+  const handleNavigation = (event) => {
+    if (!event.location) {
+      alert('Locația evenimentului nu este disponibilă');
+      return;
+    }
+
+    const { coordinates, address, name } = event.location;
+    
+    // Check if we have coordinates
+    if (coordinates && coordinates.lat && coordinates.lng) {
+      const lat = coordinates.lat;
+      const lng = coordinates.lng;
+      
+      // Detect if user is on iOS or Android
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+      const isAndroid = /android/i.test(userAgent);
+      
+      if (isIOS) {
+        // Open Apple Maps on iOS
+        window.open(`maps://maps.google.com/maps?daddr=${lat},${lng}&amp;ll=`);
+      } else if (isAndroid) {
+        // Open Google Maps on Android
+        window.open(`https://maps.google.com/maps?daddr=${lat},${lng}`);
+      } else {
+        // Desktop or other devices - open Google Maps in new tab
+        window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
+      }
+    } else if (address) {
+      // Fallback to address search if no coordinates
+      const encodedAddress = encodeURIComponent(address);
+      
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+      const isAndroid = /android/i.test(userAgent);
+      
+      if (isIOS) {
+        // Open Apple Maps on iOS with address search
+        window.open(`maps://maps.google.com/maps?q=${encodedAddress}`);
+      } else if (isAndroid) {
+        // Open Google Maps on Android with address search
+        window.open(`https://maps.google.com/maps?q=${encodedAddress}`);
+      } else {
+        // Desktop or other devices - open Google Maps in new tab
+        window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
+      }
+    } else {
+      alert('Locația evenimentului nu este disponibilă');
+    }
+  };
+
   if (loading) return <Box textAlign="center" mt={4}><CircularProgress /></Box>;
   if (error) return <Alert severity="error">{error}</Alert>;
   if (!event) return null;
@@ -73,6 +125,25 @@ export default function EventDetails() {
       </Box>
       <Typography variant="body1" mb={2}>{event.description}</Typography>
       <Typography variant="body2" mb={2}><strong>Cod eveniment:</strong> {event.code}</Typography>
+      
+      {/* Location display with navigation button */}
+      {event.location && (event.location.coordinates || event.location.address) && (
+        <Box mb={2}>
+          <Typography variant="body2" mb={1}>
+            <strong>Locație:</strong> {event.location.name || event.location.address || 'Locație specificată'}
+          </Typography>
+          <Button 
+            onClick={() => handleNavigation(event)} 
+            variant="outlined" 
+            size="small"
+            color="info"
+            startIcon={<Navigation />}
+          >
+            Navighează
+          </Button>
+        </Box>
+      )}
+      
       {event.actionReport && (
         <Button component="a" href={event.actionReport} target="_blank" rel="noopener noreferrer" variant="outlined" sx={{ mb: 2 }}>
           Fișa de intervenție

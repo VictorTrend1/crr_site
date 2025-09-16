@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, Typography, List, CircularProgress, Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, IconButton } from '@mui/material';
-import { getEvents, deleteEvent, removeVolunteerFromEvent } from '../api';
+import { Card, CardContent, Typography, List, CircularProgress, Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Chip } from '@mui/material';
+import { getEvents, deleteEvent, removeVolunteerFromEvent, getEventDetails, registerForEvent, checkInWithQR } from '../api';
 import { useAuth } from '../AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
-import { QrCode, LocationOn, AccessTime } from '@mui/icons-material';
+import { QrCode, LocationOn, AccessTime, QrCodeScanner, Navigation } from '@mui/icons-material';
 import QRCodeScanner from './QRCodeScanner';
 
 export default function EventList() {
@@ -22,6 +22,12 @@ export default function EventList() {
   const [showQRCode, setShowQRCode] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showQRScanner, setShowQRScanner] = useState(false);
+  const [registrationStatus, setRegistrationStatus] = useState({});
+  const [eventDetails, setEventDetails] = useState({});
+  const [showRegistrationForm, setShowRegistrationForm] = useState(false);
+  const [registrationCode, setRegistrationCode] = useState('');
+  const [registrationError, setRegistrationError] = useState('');
+  const [registrationSuccess, setRegistrationSuccess] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -61,6 +67,127 @@ export default function EventList() {
       // Optionally, refresh events from backend
       setEvents(events => events.map(e => e._id === eventId ? { ...e, volunteers: (e.volunteers || []).filter(v => (v.id || v._id) !== user.id) } : e));
     } catch {}
+  };
+
+  const handleShowQR = async (event) => {
+    try {
+      // Get event details to check if user is creator
+      const response = await getEventDetails(event._id);
+      setEventDetails(response.data);
+      setSelectedEvent(event);
+      setShowQRCode(true);
+    } catch (err) {
+      console.error('Error fetching event details:', err);
+    }
+  };
+
+  const handleScanQR = () => {
+    setShowQRScanner(true);
+  };
+
+  const handleRegistrationSubmit = async (e) => {
+    e.preventDefault();
+    setRegistrationError('');
+    setRegistrationSuccess('');
+    
+    try {
+      const response = await registerForEvent(registrationCode);
+      setRegistrationSuccess(response.data.msg);
+      setRegistrationCode('');
+      
+      // Update registration status
+      if (response.data.event) {
+        setRegistrationStatus(prev => ({
+          ...prev,
+          [response.data.event._id]: 'partial'
+        }));
+      }
+      
+      // Refresh events
+      loadEvents();
+    } catch (err) {
+      setRegistrationError(err.response?.data?.msg || 'Eroare la înscriere');
+    }
+  };
+
+  const handleQRScanSuccess = (data) => {
+    console.log('QR scan successful:', data);
+    setShowQRScanner(false);
+    
+    // Update registration status based on response
+    if (data.event) {
+      setRegistrationStatus(prev => ({
+        ...prev,
+        [data.event._id]: 'complete'
+      }));
+    }
+    
+    // Refresh events
+    loadEvents();
+  };
+
+  const loadEvents = async () => {
+    try {
+      const res = await getEvents();
+      if (!Array.isArray(res.data)) {
+        setEvents([]);
+        return;
+      }
+      setEvents(res.data);
+    } catch (err) {
+      setEvents([]);
+    }
+  };
+
+  const handleNavigation = (event) => {
+    if (!event.location) {
+      alert('Locația evenimentului nu este disponibilă');
+      return;
+    }
+
+    const { coordinates, address, name } = event.location;
+    
+    // Check if we have coordinates
+    if (coordinates && coordinates.lat && coordinates.lng) {
+      const lat = coordinates.lat;
+      const lng = coordinates.lng;
+      
+      // Detect if user is on iOS or Android
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+      const isAndroid = /android/i.test(userAgent);
+      
+      if (isIOS) {
+        // Open Apple Maps on iOS
+        window.open(`maps://maps.google.com/maps?daddr=${lat},${lng}&amp;ll=`);
+      } else if (isAndroid) {
+        // Open Google Maps on Android
+        window.open(`https://maps.google.com/maps?daddr=${lat},${lng}`);
+      } else {
+        // Desktop or other devices - open Google Maps in new tab
+        window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
+      }
+    } else if (address) {
+      // Fallback to address search if no coordinates
+      const encodedAddress = encodeURIComponent(address);
+      
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+      const isAndroid = /android/i.test(userAgent);
+      
+      if (isIOS) {
+        // Open Apple Maps on iOS with address search
+        window.open(`maps://maps.google.com/maps?q=${encodedAddress}`);
+      } else if (isAndroid) {
+        // Open Google Maps on Android with address search
+        window.open(`https://maps.google.com/maps?q=${encodedAddress}`);
+      } else {
+        // Desktop or other devices - open Google Maps in new tab
+        window.open(`https://www.google.com/maps/search/?api=1&query=${encodedAddress}`, '_blank');
+      }
+    } else {
+      alert('Locația evenimentului nu este disponibilă');
+    }
   };
 
   useEffect(() => {
@@ -122,27 +249,71 @@ export default function EventList() {
                     {event.description}
                   </Typography>
                 )}
-                <Box display="flex" gap={1} flexWrap="wrap">
+                <Box display="flex" gap={1} flexWrap="wrap" alignItems="center">
                   <Button component={Link} to={`/events/${event._id}`} variant="outlined" size="small">
                     Detalii
                   </Button>
-                  <Button 
-                    onClick={() => { setSelectedEvent(event); setShowQRCode(true); }} 
-                    variant="outlined" 
-                    size="small"
-                    startIcon={<QrCode />}
-                  >
-                    QR Code
-                  </Button>
-                  <Button 
-                    onClick={() => setShowQRScanner(true)} 
-                    variant="contained" 
-                    size="small"
-                    color="success"
-                    startIcon={<QrCode />}
-                  >
-                    Check-in
-                  </Button>
+                  
+                  {/* Navigation button - show if event has location */}
+                  {event.location && (event.location.coordinates || event.location.address) && (
+                    <Button 
+                      onClick={() => handleNavigation(event)} 
+                      variant="outlined" 
+                      size="small"
+                      color="info"
+                      startIcon={<Navigation />}
+                    >
+                      Navighează
+                    </Button>
+                  )}
+                  
+                  {/* QR Code button - only visible to event creator */}
+                  {event.createdBy === user.id && (
+                    <Button 
+                      onClick={() => handleShowQR(event)} 
+                      variant="outlined" 
+                      size="small"
+                      startIcon={<QrCode />}
+                    >
+                      QR Code
+                    </Button>
+                  )}
+                  
+                  {/* Registration buttons for volunteers */}
+                  {user.role === 'Voluntar' && (
+                    <>
+                      {!isRegistered && registrationStatus[event._id] !== 'partial' && (
+                        <Button 
+                          onClick={() => setShowRegistrationForm(true)} 
+                          variant="contained" 
+                          size="small"
+                          color="primary"
+                        >
+                          Înscriere
+                        </Button>
+                      )}
+                      
+                      {registrationStatus[event._id] === 'partial' && (
+                        <Chip 
+                          label="Înscris parțial - scanează QR" 
+                          color="warning" 
+                          size="small"
+                        />
+                      )}
+                      
+                      {(isRegistered || registrationStatus[event._id] === 'partial') && (
+                        <Button 
+                          onClick={handleScanQR} 
+                          variant="contained" 
+                          size="small"
+                          color="success"
+                          startIcon={<QrCodeScanner />}
+                        >
+                          Scanează QR
+                        </Button>
+                      )}
+                    </>
+                  )}
                 </Box>
                 {(user.role === 'Admin' || (user.role === 'Organizator' && event.createdBy === user.id)) && (
                   <>
@@ -172,7 +343,7 @@ export default function EventList() {
         })}
       </List>
 
-      {/* QR Code Display Dialog */}
+      {/* QR Code Display Dialog - Only for event creators */}
       <Dialog open={showQRCode} onClose={() => setShowQRCode(false)} maxWidth="sm" fullWidth>
         <DialogTitle>QR Code pentru Check-in</DialogTitle>
         <DialogContent>
@@ -181,18 +352,22 @@ export default function EventList() {
             <Typography variant="body2" color="text.secondary">
               Cod eveniment: {selectedEvent?.code}
             </Typography>
-            {selectedEvent?.qrCode && (
+            {eventDetails?.qrCode ? (
               <Box>
                 <img 
-                  src={selectedEvent.qrCode} 
+                  src={eventDetails.qrCode} 
                   alt="QR Code" 
                   style={{ maxWidth: '100%', height: 'auto' }}
                 />
+                <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mt: 2 }}>
+                  Acest QR code poate fi scanat de oricine pentru a se înregistra automat la eveniment (până la începerea evenimentului)
+                </Typography>
               </Box>
+            ) : (
+              <Typography variant="body2" color="error">
+                Nu aveți permisiunea de a vedea QR code-ul acestui eveniment. Doar creatorul evenimentului poate vedea QR code-ul.
+              </Typography>
             )}
-            <Typography variant="body2" color="text.secondary" textAlign="center">
-              Scanați acest QR code pentru a vă înregistra la eveniment
-            </Typography>
           </Box>
         </DialogContent>
         <DialogActions>
@@ -200,14 +375,55 @@ export default function EventList() {
         </DialogActions>
       </Dialog>
 
+      {/* Registration Form Dialog */}
+      <Dialog open={showRegistrationForm} onClose={() => setShowRegistrationForm(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Înscriere la eveniment</DialogTitle>
+        <DialogContent>
+          <Box component="form" onSubmit={handleRegistrationSubmit} sx={{ mt: 2 }}>
+            {registrationError && (
+              <Typography color="error" sx={{ mb: 2 }}>
+                {registrationError}
+              </Typography>
+            )}
+            {registrationSuccess && (
+              <Typography color="success.main" sx={{ mb: 2 }}>
+                {registrationSuccess}
+              </Typography>
+            )}
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Introdu codul evenimentului pentru a te înscrie parțial. După înscriere, va trebui să scanezi QR code-ul pentru a completa înregistrarea.
+            </Typography>
+            <Box display="flex" gap={1}>
+              <input
+                type="text"
+                placeholder="Cod eveniment"
+                value={registrationCode}
+                onChange={(e) => setRegistrationCode(e.target.value)}
+                required
+                style={{
+                  flex: 1,
+                  padding: '8px 12px',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px',
+                  fontSize: '14px'
+                }}
+              />
+              <Button type="submit" variant="contained" color="primary">
+                Înscriere
+              </Button>
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowRegistrationForm(false)}>Anulează</Button>
+        </DialogActions>
+      </Dialog>
+
       {/* QR Code Scanner Dialog */}
       <QRCodeScanner
         open={showQRScanner}
         onClose={() => setShowQRScanner(false)}
-        onSuccess={(data) => {
-          console.log('Check-in successful:', data);
-          // Optionally refresh events or show success message
-        }}
+        onSuccess={handleQRScanSuccess}
       />
     </>
   );
