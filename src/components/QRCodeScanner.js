@@ -158,7 +158,7 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
 
   const generateTestQR = () => {
     // Generate a test QR code URL for debugging
-    const testUrl = 'https://backend.crr-site.online/api/events/qr/TEST123';
+    const testUrl = 'https://crr-site.online/event-checkin/TEST123';
     setManualInput(testUrl);
     setShowManualInput(true);
   };
@@ -168,7 +168,40 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
       setError('');
       setSuccess('');
       
-      // Check if it's a redirecting URL
+      // Check if it's a redirecting URL (new format)
+      if (qrData.includes('crr-site.online/event-checkin/')) {
+        // Extract check-in code from URL
+        const checkInCodeMatch = qrData.match(/\/event-checkin\/([a-fA-F0-9]+)/);
+        if (checkInCodeMatch) {
+          const checkInCode = checkInCodeMatch[1];
+          const qrDataForAPI = JSON.stringify({
+            checkInCode: checkInCode,
+            type: 'event_checkin'
+          });
+          
+          // Process with API
+          const response = await checkInWithQR(qrDataForAPI);
+          
+          if (response.data.autoRegistered) {
+            setSuccess('Te-ai înregistrat automat la eveniment!');
+          } else if (response.data.completedPartialRegistration) {
+            setSuccess('Înregistrarea a fost completată cu succes!');
+          } else if (response.data.wasAlreadyRegistered) {
+            setSuccess('Erai deja înregistrat la acest eveniment!');
+          } else {
+            setSuccess(response.data.msg);
+          }
+          
+          if (onSuccess) {
+            onSuccess(response.data);
+          }
+          
+          setTimeout(() => handleClose(), 3000);
+          return;
+        }
+      }
+      
+      // Check if it's the old backend URL format (for backward compatibility)
       if (qrData.includes('backend.crr-site.online/api/events/qr/')) {
         // Extract check-in code from URL
         const checkInCodeMatch = qrData.match(/\/qr\/([a-fA-F0-9]+)/);
@@ -189,13 +222,13 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
           } else if (response.data.wasAlreadyRegistered) {
             setSuccess('Erai deja înregistrat la acest eveniment!');
           } else {
-      setSuccess(response.data.msg);
+            setSuccess(response.data.msg);
           }
-      
-      if (onSuccess) {
-        onSuccess(response.data);
-      }
-      
+          
+          if (onSuccess) {
+            onSuccess(response.data);
+          }
+          
           setTimeout(() => handleClose(), 3000);
           return;
         }

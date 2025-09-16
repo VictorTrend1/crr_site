@@ -20,6 +20,7 @@ import PublicProfile from './components/PublicProfile';
 import VolunteerChoice from './components/VolunteerChoice';
 import VolunteerRegistration from './components/VolunteerRegistration';
 import VisitorRegistration from './components/VisitorRegistration';
+import EventCheckInRedirect from './components/EventCheckInRedirect';
 import { Link as RouterLink } from 'react-router-dom';
 import Link from '@mui/material/Link';
 
@@ -200,6 +201,7 @@ function App() {
               <Route path="/profile/:indicator" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/public/profile/:indicator" element={<PublicProfile />} />
+              <Route path="/event-checkin/:checkInCode" element={<EventCheckInRedirect />} />
               <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             </Routes>
           </Container>
