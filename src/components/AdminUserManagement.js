@@ -14,7 +14,7 @@ const getDetasamentColor = (detasament) => {
     'Acordare PAP': '#ffeb3b', // Yellow
     'Detasament': '#000000', // Black
     'Comunicare': '#e91e63', // Pink
-    'Logistic': '#4caf50', // Green
+    'Logistică': '#4caf50', // Green
     'Management': '#2196f3' // Blue
   };
   return colors[detasament] || '#666666';
@@ -115,7 +115,7 @@ export default function AdminUserManagement() {
                 </Box>
                 <Box display="flex" alignItems="center" gap={1}>
                   <Box width={16} height={16} bgcolor="#4caf50" borderRadius="50%" />
-                  <Typography variant="body2">Logistic</Typography>
+                  <Typography variant="body2">Logistică</Typography>
                 </Box>
                 <Box display="flex" alignItems="center" gap={1}>
                   <Box width={16} height={16} bgcolor="#2196f3" borderRadius="50%" />

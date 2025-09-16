@@ -158,7 +158,7 @@ export default function Profile() {
       'Acordare PAP': '#ffeb3b', // Yellow
       'Detasament': '#000000', // Black
       'Comunicare': '#e91e63', // Pink
-      'Logistic': '#4caf50', // Green
+      'Logistică': '#4caf50', // Green
       'Management': '#2196f3' // Blue
     };
     return colors[detasament] || '#666666';
@@ -465,7 +465,7 @@ export default function Profile() {
                   >
                     <MenuItem value="Voluntar">Voluntar</MenuItem>
                     <MenuItem value="Comunicare">Comunicare</MenuItem>
-                    <MenuItem value="Logistic">Logistic</MenuItem>
+                    <MenuItem value="Logistică">Logistică</MenuItem>
                     <MenuItem value="Detasament">Detasament</MenuItem>
                     <MenuItem value="Acordare PA">Acordare PA</MenuItem>
                     <MenuItem value="Acordare PAP">Acordare PAP</MenuItem>

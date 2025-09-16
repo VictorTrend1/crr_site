@@ -73,7 +73,7 @@ export default function PublicProfile() {
       'Acordare PAP': '#ffeb3b', // Yellow
       'Detasament': '#000000', // Black
       'Comunicare': '#e91e63', // Pink
-      'Logistic': '#4caf50', // Green
+      'Logistică': '#4caf50', // Green
       'Management': '#2196f3' // Blue
     };
     return colors[detasament] || '#666666';

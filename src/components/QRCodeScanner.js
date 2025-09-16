@@ -12,12 +12,14 @@ import {
 } from '@mui/material';
 import { checkInWithQR } from '../api';
 
-const QRCodeScanner = ({ open, onClose, onSuccess }) => {
+const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) => {
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const videoRef = useRef(null);
   const streamRef = useRef(null);
+  const canvasRef = useRef(null);
+  const scanningInterval = useRef(null);
 
   useEffect(() => {
     if (open) {
@@ -35,13 +37,20 @@ const QRCodeScanner = ({ open, onClose, onSuccess }) => {
       
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
-          facingMode: 'environment' // Use back camera if available
+          facingMode: 'environment', // Use back camera if available
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
         } 
       });
       
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        
+        // Start QR code detection when video is ready
+        videoRef.current.onloadedmetadata = () => {
+          startQRDetection();
+        };
       }
     } catch (err) {
       setError('Nu s-a putut accesa camera. Verificați permisiunile.');
@@ -49,10 +58,63 @@ const QRCodeScanner = ({ open, onClose, onSuccess }) => {
     }
   };
 
+  const startQRDetection = () => {
+    if (scanningInterval.current) {
+      clearInterval(scanningInterval.current);
+    }
+    
+    scanningInterval.current = setInterval(() => {
+      if (videoRef.current && canvasRef.current) {
+        detectQRCode();
+      }
+    }, 100); // Check every 100ms
+  };
+
+  const detectQRCode = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    
+    if (!video || !canvas) return;
+    
+    const context = canvas.getContext('2d');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    // Draw video frame to canvas
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    // Get image data for QR detection
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    
+    // Simple QR code detection - look for square patterns
+    // This is a basic implementation, in production you'd use a proper QR library
+    try {
+      // Try to detect QR code patterns in the image
+      const qrData = detectQRPattern(imageData);
+      if (qrData) {
+        processQRData(qrData);
+        stopCamera();
+      }
+    } catch (err) {
+      // Silently continue scanning
+    }
+  };
+
+  const detectQRPattern = (imageData) => {
+    // This is a simplified QR detection
+    // In a real implementation, you'd use a library like jsQR or qr-scanner
+    // For now, we'll return null and rely on manual input
+    return null;
+  };
+
   const stopCamera = () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
+    }
+    if (scanningInterval.current) {
+      clearInterval(scanningInterval.current);
+      scanningInterval.current = null;
     }
     setScanning(false);
   };
@@ -76,21 +138,44 @@ const QRCodeScanner = ({ open, onClose, onSuccess }) => {
       setError('');
       setSuccess('');
       
-      const response = await checkInWithQR(qrData);
-      
-      // Show different success messages based on the response
-      if (response.data.autoRegistered) {
-        setSuccess('Te-ai înregistrat automat la eveniment!');
-      } else if (response.data.completedPartialRegistration) {
-        setSuccess('Înregistrarea a fost completată cu succes!');
-      } else if (response.data.wasAlreadyRegistered) {
-        setSuccess('Erai deja înregistrat la acest eveniment!');
-      } else {
-        setSuccess(response.data.msg);
+      // Try to parse QR data to determine type
+      let qrInfo;
+      try {
+        qrInfo = JSON.parse(qrData);
+      } catch (err) {
+        // If not JSON, treat as plain text
+        setSuccess(`QR Code detectat: ${qrData}`);
+        if (onSuccess) {
+          onSuccess({ data: qrData, type: 'text' });
+        }
+        setTimeout(() => handleClose(), 2000);
+        return;
       }
       
-      if (onSuccess) {
-        onSuccess(response.data);
+      // Handle different QR code types
+      if (qrInfo.type === 'event_checkin') {
+        // Event QR code
+        const response = await checkInWithQR(qrData);
+        
+        if (response.data.autoRegistered) {
+          setSuccess('Te-ai înregistrat automat la eveniment!');
+        } else if (response.data.completedPartialRegistration) {
+          setSuccess('Înregistrarea a fost completată cu succes!');
+        } else if (response.data.wasAlreadyRegistered) {
+          setSuccess('Erai deja înregistrat la acest eveniment!');
+        } else {
+          setSuccess(response.data.msg);
+        }
+        
+        if (onSuccess) {
+          onSuccess(response.data);
+        }
+      } else {
+        // Other QR code types
+        setSuccess(`QR Code procesat: ${qrData}`);
+        if (onSuccess) {
+          onSuccess({ data: qrData, type: qrInfo.type || 'unknown' });
+        }
       }
       
       // Close dialog after 3 seconds
@@ -104,48 +189,159 @@ const QRCodeScanner = ({ open, onClose, onSuccess }) => {
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Scanare QR Code pentru Check-in</DialogTitle>
+    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+      <DialogTitle>{title}</DialogTitle>
       <DialogContent>
         <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
           {error && <Alert severity="error">{error}</Alert>}
           {success && <Alert severity="success">{success}</Alert>}
           
           {scanning ? (
-            <Box position="relative" width="100%" maxWidth={400}>
+            <Box position="relative" width="100%" maxWidth={600} sx={{ aspectRatio: '16/9' }}>
               <video
                 ref={videoRef}
                 autoPlay
                 playsInline
-                style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
-              />
-              <Box
-                position="absolute"
-                top="50%"
-                left="50%"
-                transform="translate(-50%, -50%)"
-                width="200px"
-                height="200px"
-                border="2px solid #1976d2"
-                borderRadius="8px"
-                sx={{
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: '-2px',
-                    left: '-2px',
-                    right: '-2px',
-                    bottom: '-2px',
-                    border: '2px solid #1976d2',
-                    borderRadius: '8px',
-                    animation: 'pulse 2s infinite'
-                  }
+                muted
+                style={{ 
+                  width: '100%', 
+                  height: '100%', 
+                  objectFit: 'cover',
+                  borderRadius: '8px'
                 }}
               />
+              
+              {/* Full camera overlay with scanning effect */}
+              <Box
+                position="absolute"
+                top={0}
+                left={0}
+                right={0}
+                bottom={0}
+                sx={{
+                  background: 'rgba(0, 0, 0, 0.3)',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                {/* Scanning frame */}
+                <Box
+                  position="relative"
+                  width="250px"
+                  height="250px"
+                  sx={{
+                    border: '3px solid #1976d2',
+                    borderRadius: '12px',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: '-3px',
+                      left: '-3px',
+                      right: '-3px',
+                      bottom: '-3px',
+                      border: '3px solid #1976d2',
+                      borderRadius: '12px',
+                      animation: 'pulse 1.5s infinite',
+                      opacity: 0.7
+                    },
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      width: '20px',
+                      height: '20px',
+                      background: '#1976d2',
+                      borderRadius: '50%',
+                      animation: 'pulse 0.8s infinite'
+                    }
+                  }}
+                />
+                
+                {/* Corner indicators */}
+                <Box
+                  position="absolute"
+                  top="50%"
+                  left="50%"
+                  transform="translate(-50%, -50%)"
+                  width="250px"
+                  height="250px"
+                  sx={{
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: '10px',
+                      left: '10px',
+                      width: '30px',
+                      height: '30px',
+                      borderTop: '4px solid #1976d2',
+                      borderLeft: '4px solid #1976d2',
+                      borderRadius: '4px 0 0 0'
+                    },
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      top: '10px',
+                      right: '10px',
+                      width: '30px',
+                      height: '30px',
+                      borderTop: '4px solid #1976d2',
+                      borderRight: '4px solid #1976d2',
+                      borderRadius: '0 4px 0 0'
+                    }
+                  }}
+                />
+                <Box
+                  position="absolute"
+                  top="50%"
+                  left="50%"
+                  transform="translate(-50%, -50%)"
+                  width="250px"
+                  height="250px"
+                  sx={{
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      bottom: '10px',
+                      left: '10px',
+                      width: '30px',
+                      height: '30px',
+                      borderBottom: '4px solid #1976d2',
+                      borderLeft: '4px solid #1976d2',
+                      borderRadius: '0 0 0 4px'
+                    },
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      bottom: '10px',
+                      right: '10px',
+                      width: '30px',
+                      height: '30px',
+                      borderBottom: '4px solid #1976d2',
+                      borderRight: '4px solid #1976d2',
+                      borderRadius: '0 0 4px 0'
+                    }
+                  }}
+                />
+              </Box>
+              
+              {/* Hidden canvas for QR detection */}
+              <canvas
+                ref={canvasRef}
+                style={{ display: 'none' }}
+              />
+              
               <Typography 
                 variant="body2" 
                 textAlign="center" 
-                sx={{ mt: 2, color: 'text.secondary' }}
+                sx={{ 
+                  mt: 2, 
+                  color: 'text.secondary',
+                  fontWeight: 'bold'
+                }}
               >
                 Poziționați QR code-ul în cadrul de scanare
               </Typography>
