@@ -105,9 +105,10 @@ export default function EventDetails() {
   if (error) return <Alert severity="error">{error}</Alert>;
   if (!event) return null;
 
-  if (user.role === 'Voluntar' && !event.volunteers?.some(v => (v.id || v._id) === user.id)) {
-    return <Alert severity="warning" sx={{ mt: 4 }}>Nu ai acces la acest eveniment.</Alert>;
-  }
+  // Allow all volunteers to view event details (they can register via QR scan)
+  // if (user.role === 'Voluntar' && !event.volunteers?.some(v => (v.id || v._id) === user.id)) {
+  //   return <Alert severity="warning" sx={{ mt: 4 }}>Nu ai acces la acest eveniment.</Alert>;
+  // }
 
   const isRegistered = event.volunteers?.some(v => (v.id || v._id) === user.id);
 
@@ -149,17 +150,13 @@ export default function EventDetails() {
           Fișa de intervenție
         </Button>
       )}
-      {user.role === 'Voluntar' && (
-        isRegistered ? (
-          <Chip label="Ești înscris la acest eveniment" color="success" sx={{ mb: 2 }} />
-        ) : (
-          <Chip label="Nu ești înscris la acest eveniment" color="warning" sx={{ mb: 2 }} />
-        )
-      )}
       {user.role === 'Voluntar' && isRegistered && (
-        <Button onClick={handleExit} variant="contained" color="warning" sx={{ mb: 2, ml: 2 }}>
-          Retrage-te
-        </Button>
+        <Box sx={{ mb: 2 }}>
+          <Chip label="Ești înscris la acest eveniment" color="success" sx={{ mb: 1 }} />
+          <Button onClick={handleExit} variant="contained" color="warning">
+            Retrage-te
+          </Button>
+        </Box>
       )}
       <Box mt={3}>
         <Typography variant="h6">Voluntari înscriși ({event.volunteers?.length || 0}):</Typography>
