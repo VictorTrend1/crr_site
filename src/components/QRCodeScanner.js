@@ -77,7 +77,7 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
     const video = videoRef.current;
     const canvas = canvasRef.current;
     
-    if (!video || !canvas) return;
+    if (!video || !canvas || video.readyState !== video.HAVE_ENOUGH_DATA) return;
     
     const context = canvas.getContext('2d');
     canvas.width = video.videoWidth;
@@ -89,24 +89,30 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
     // Get image data for QR detection
     const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
     
-    // Simple QR code detection - look for square patterns
-    // This is a basic implementation, in production you'd use a proper QR library
+    // Debug: Log every 50th frame to avoid spam
+    if (Math.random() < 0.02) {
+      console.log('Scanning frame:', canvas.width, 'x', canvas.height);
+    }
+    
     try {
       // Try to detect QR code patterns in the image
       const qrData = detectQRPattern(imageData);
       if (qrData) {
+        console.log('QR Code found!', qrData);
         processQRData(qrData);
         stopCamera();
       }
     } catch (err) {
-      // Silently continue scanning
+      console.log('QR detection error:', err);
     }
   };
 
   const detectQRPattern = (imageData) => {
     // Use jsQR library for proper QR code detection
     try {
-      const code = jsQR(imageData.data, imageData.width, imageData.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height, {
+        inversionAttempts: "dontInvert",
+      });
       if (code) {
         console.log('QR Code detected:', code.data);
         return code.data;
@@ -150,6 +156,13 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
     setManualInput(event.target.value);
   };
 
+  const generateTestQR = () => {
+    // Generate a test QR code URL for debugging
+    const testUrl = 'https://backend.crr-site.online/api/events/qr/TEST123';
+    setManualInput(testUrl);
+    setShowManualInput(true);
+  };
+
   const processQRData = async (qrData) => {
     try {
       setError('');
@@ -176,13 +189,13 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
           } else if (response.data.wasAlreadyRegistered) {
             setSuccess('Erai deja înregistrat la acest eveniment!');
           } else {
-            setSuccess(response.data.msg);
+      setSuccess(response.data.msg);
           }
-          
-          if (onSuccess) {
-            onSuccess(response.data);
-          }
-          
+      
+      if (onSuccess) {
+        onSuccess(response.data);
+      }
+      
           setTimeout(() => handleClose(), 3000);
           return;
         }
@@ -343,18 +356,18 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
                       borderRadius: '0 4px 0 0'
                     }
                   }}
-                />
-                <Box
-                  position="absolute"
-                  top="50%"
-                  left="50%"
-                  transform="translate(-50%, -50%)"
+              />
+              <Box
+                position="absolute"
+                top="50%"
+                left="50%"
+                transform="translate(-50%, -50%)"
                   width="250px"
                   height="250px"
-                  sx={{
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
+                sx={{
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
                       bottom: '10px',
                       left: '10px',
                       width: '30px',
@@ -406,14 +419,22 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
           )}
           
           {!showManualInput ? (
-            <Button
-              variant="outlined"
-              onClick={handleManualQR}
-              fullWidth
-              sx={{ mt: 2 }}
-            >
-              Introducere manuală QR code
-            </Button>
+            <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+          <Button
+            variant="outlined"
+            onClick={handleManualQR}
+            fullWidth
+          >
+            Introducere manuală QR code
+          </Button>
+              <Button
+                variant="outlined"
+                onClick={generateTestQR}
+                sx={{ minWidth: '120px' }}
+              >
+                Test QR
+              </Button>
+            </Box>
           ) : (
             <Box sx={{ mt: 2, width: '100%' }}>
               <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary' }}>
