@@ -301,17 +301,16 @@ export default function EventList() {
                         />
                       )}
                       
-                      {(isRegistered || registrationStatus[event._id] === 'partial') && (
-                        <Button 
-                          onClick={handleScanQR} 
-                          variant="contained" 
-                          size="small"
-                          color="success"
-                          startIcon={<QrCodeScanner />}
-                        >
-                          Scanează QR
-                        </Button>
-                      )}
+                      {/* QR scan button - always visible for volunteers */}
+                      <Button 
+                        onClick={handleScanQR} 
+                        variant="contained" 
+                        size="small"
+                        color="success"
+                        startIcon={<QrCodeScanner />}
+                      >
+                        Scanează QR
+                      </Button>
                     </>
                   )}
                 </Box>
