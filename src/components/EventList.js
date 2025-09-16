@@ -279,40 +279,6 @@ export default function EventList() {
                     </Button>
                   )}
                   
-                  {/* Registration buttons for volunteers */}
-                  {user.role === 'Voluntar' && (
-                    <>
-                      {!isRegistered && registrationStatus[event._id] !== 'partial' && (
-                        <Button 
-                          onClick={() => setShowRegistrationForm(true)} 
-                          variant="contained" 
-                          size="small"
-                          color="primary"
-                        >
-                          Înscriere
-                        </Button>
-                      )}
-                      
-                      {registrationStatus[event._id] === 'partial' && (
-                        <Chip 
-                          label="Înscris parțial - scanează QR" 
-                          color="warning" 
-                          size="small"
-                        />
-                      )}
-                      
-                      {/* QR scan button - always visible for volunteers */}
-                      <Button 
-                        onClick={handleScanQR} 
-                        variant="contained" 
-                        size="small"
-                        color="success"
-                        startIcon={<QrCodeScanner />}
-                      >
-                        Scanează QR
-                      </Button>
-                    </>
-                  )}
                 </Box>
                 {(user.role === 'Admin' || (user.role === 'Organizator' && event.createdBy === user.id)) && (
                   <>
@@ -322,18 +288,6 @@ export default function EventList() {
                     <Button onClick={() => handleDelete(event._id)} variant="contained" color="error" sx={{ mt: 1 }}>
                       Șterge
                     </Button>
-                  </>
-                )}
-                {user.role === 'Voluntar' && (
-                  <>
-                    <Button onClick={() => handleHide(event._id)} variant="outlined" color="secondary" sx={{ mt: 1, mr: 1 }}>
-                      Ascunde
-                    </Button>
-                    {isRegistered && (
-                      <Button onClick={() => handleExit(event._id)} variant="contained" color="warning" sx={{ mt: 1 }}>
-                        Retrage-te
-                      </Button>
-                    )}
                   </>
                 )}
               </CardContent>

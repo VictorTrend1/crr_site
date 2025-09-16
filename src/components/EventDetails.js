@@ -158,59 +158,64 @@ export default function EventDetails() {
           </Button>
         </Box>
       )}
-      <Box mt={3}>
-        <Typography variant="h6">Voluntari înscriși ({event.volunteers?.length || 0}):</Typography>
-        <List>
-          {event.volunteers?.map(v => {
-            const isEventAdmin = (event.admins || []).some(a => (a.id || a._id) === (v.id || v._id));
-            return (
-              <ListItem key={v._id} secondaryAction={canManage && (
-                <>
-                  {!isEventAdmin && (
-                    <Button onClick={async () => {
-                      try {
-                        await addEventAdmin(id, v.id || v._id);
-                        setRefresh(r => r + 1);
-                      } catch {}
-                    }} sx={{ mr: 1 }}>Fă admin eveniment</Button>
-                  )}
-                  {isEventAdmin && (
-                    <Button color="warning" onClick={async () => {
-                      try {
-                        await removeEventAdmin(id, v.id || v._id);
-                        setRefresh(r => r + 1);
-                      } catch {}
-                    }} sx={{ mr: 1 }}>Revocă admin</Button>
-                  )}
-                  <Button color="error" onClick={() => handleRemove(v.id || v._id)}>
-                    Elimină
-                  </Button>
-                </>
-              )}>
-                <ListItemAvatar><Avatar>{v.name[0]}</Avatar></ListItemAvatar>
-                <ListItemText primary={v.name} secondary={v.email} />
-              </ListItem>
-            );
-          })}
-        </List>
-      </Box>
-      <Box mt={3}>
-        <Typography variant="h6">Organizatori/Admini:</Typography>
-        <List>
-          {event.organizers?.map(o => (
-            <ListItem key={o._id}>
-              <ListItemAvatar><Avatar>{o.name[0]}</Avatar></ListItemAvatar>
-              <ListItemText primary={o.name} secondary={`${o.email} (${o.role})`} />
-            </ListItem>
-          ))}
-          {event.admins?.map(a => (
-            <ListItem key={a._id}>
-              <ListItemAvatar><Avatar>{a.name[0]}</Avatar></ListItemAvatar>
-              <ListItemText primary={a.name} secondary={`${a.email} (Admin eveniment)`} />
-            </ListItem>
-          ))}
-        </List>
-      </Box>
+      {/* Only show volunteer and organizer sections if user is not fully registered */}
+      {!(user.role === 'Voluntar' && isRegistered) && (
+        <>
+          <Box mt={3}>
+            <Typography variant="h6">Voluntari înscriși ({event.volunteers?.length || 0}):</Typography>
+            <List>
+              {event.volunteers?.map(v => {
+                const isEventAdmin = (event.admins || []).some(a => (a.id || a._id) === (v.id || v._id));
+                return (
+                  <ListItem key={v._id} secondaryAction={canManage && (
+                    <>
+                      {!isEventAdmin && (
+                        <Button onClick={async () => {
+                          try {
+                            await addEventAdmin(id, v.id || v._id);
+                            setRefresh(r => r + 1);
+                          } catch {}
+                        }} sx={{ mr: 1 }}>Fă admin eveniment</Button>
+                      )}
+                      {isEventAdmin && (
+                        <Button color="warning" onClick={async () => {
+                          try {
+                            await removeEventAdmin(id, v.id || v._id);
+                            setRefresh(r => r + 1);
+                          } catch {}
+                        }} sx={{ mr: 1 }}>Revocă admin</Button>
+                      )}
+                      <Button color="error" onClick={() => handleRemove(v.id || v._id)}>
+                        Elimină
+                      </Button>
+                    </>
+                  )}>
+                    <ListItemAvatar><Avatar>{v.name[0]}</Avatar></ListItemAvatar>
+                    <ListItemText primary={v.name} secondary={v.email} />
+                  </ListItem>
+                );
+              })}
+            </List>
+          </Box>
+          <Box mt={3}>
+            <Typography variant="h6">Organizatori/Admini:</Typography>
+            <List>
+              {event.organizers?.map(o => (
+                <ListItem key={o._id}>
+                  <ListItemAvatar><Avatar>{o.name[0]}</Avatar></ListItemAvatar>
+                  <ListItemText primary={o.name} secondary={`${o.email} (${o.role})`} />
+                </ListItem>
+              ))}
+              {event.admins?.map(a => (
+                <ListItem key={a._id}>
+                  <ListItemAvatar><Avatar>{a.name[0]}</Avatar></ListItemAvatar>
+                  <ListItemText primary={a.name} secondary={`${a.email} (Admin eveniment)`} />
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        </>
+      )}
     </Box>
   );
 } 
