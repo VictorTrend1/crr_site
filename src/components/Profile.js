@@ -23,6 +23,7 @@ export default function Profile() {
   const [resedinta, setResedinta] = useState('');
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [userEvents, setUserEvents] = useState([]);
+  const [refreshEvents, setRefreshEvents] = useState(0);
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
@@ -33,6 +34,16 @@ export default function Profile() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [showScutireForm, setShowScutireForm] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+
+  const fetchUserEvents = async (targetIndicator) => {
+    try {
+      const eventsResponse = await getUserEvents(targetIndicator);
+      setUserEvents(eventsResponse.data || []);
+    } catch (err) {
+      console.error('Error fetching user events:', err);
+      setUserEvents([]);
+    }
+  };
 
   useEffect(() => {
     async function loadProfile() {
@@ -57,13 +68,7 @@ export default function Profile() {
         setResedinta(userData.resedinta || '');
         
         // Fetch user events
-        try {
-          const eventsResponse = await getUserEvents(targetIndicator);
-          setUserEvents(eventsResponse.data || []);
-        } catch (err) {
-          console.error('Error fetching user events:', err);
-          setUserEvents([]);
-        }
+        await fetchUserEvents(targetIndicator);
         
         // Generate QR code (pointing to public profile for sharing)
         const profileUrl = `${window.location.origin}/public/profile/${targetIndicator}`;
@@ -93,6 +98,32 @@ export default function Profile() {
     if (currentUser) {
       loadProfile();
     }
+  }, [indicator, currentUser]);
+
+  // Refresh events when refreshEvents changes
+  useEffect(() => {
+    if (refreshEvents > 0) {
+      const targetIndicator = indicator || currentUser?.indicator;
+      if (targetIndicator) {
+        fetchUserEvents(targetIndicator);
+      }
+    }
+  }, [refreshEvents, indicator, currentUser]);
+
+  // Auto-refresh events when page becomes visible (user returns from QR scan)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        // Page became visible, refresh events
+        const targetIndicator = indicator || currentUser?.indicator;
+        if (targetIndicator) {
+          fetchUserEvents(targetIndicator);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [indicator, currentUser]);
 
   const handleDownloadQR = () => {
@@ -933,9 +964,19 @@ export default function Profile() {
 
       {/* Full Width Events Section */}
       <Box mt={4}>
-        <Typography variant="h5" mb={3}>
-          Evenimente
-        </Typography>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+          <Typography variant="h5">
+            Evenimente
+          </Typography>
+          <Button
+            variant="outlined"
+            onClick={() => setRefreshEvents(r => r + 1)}
+            size="small"
+            sx={{ ml: 2 }}
+          >
+            Actualizează
+          </Button>
+        </Box>
         
         {userEvents.length > 0 ? (
           <Box>
