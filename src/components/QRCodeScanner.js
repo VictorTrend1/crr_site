@@ -282,21 +282,27 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
     <Dialog 
       open={open} 
       onClose={handleClose} 
-      maxWidth="sm" 
+      maxWidth="md" 
       fullWidth
-      fullScreen={window.innerWidth < 600}
+      fullScreen={window.innerWidth < 768}
       sx={{
         '& .MuiDialog-paper': {
-          margin: window.innerWidth < 600 ? 0 : 16,
-          maxHeight: window.innerWidth < 600 ? '100vh' : '90vh',
-          borderRadius: window.innerWidth < 600 ? 0 : 8
+          margin: window.innerWidth < 768 ? 0 : 24,
+          maxHeight: window.innerWidth < 768 ? '100vh' : '85vh',
+          borderRadius: window.innerWidth < 768 ? 0 : 12
         }
       }}
     >
-      <DialogTitle sx={{ pb: 1, fontSize: window.innerWidth < 600 ? '1.1rem' : '1.25rem' }}>
+      <DialogTitle sx={{ 
+        pb: 2, 
+        fontSize: '1.5rem',
+        fontWeight: 'bold',
+        textAlign: 'center',
+        color: 'primary.main'
+      }}>
         {title}
       </DialogTitle>
-      <DialogContent sx={{ p: window.innerWidth < 600 ? 2 : 3, pt: 1 }}>
+      <DialogContent sx={{ p: 3, pt: 1 }}>
         <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
           {error && <Alert severity="error" sx={{ width: '100%' }}>{error}</Alert>}
           {success && <Alert severity="success" sx={{ width: '100%' }}>{success}</Alert>}
@@ -305,10 +311,13 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
             <Box 
               position="relative" 
               width="100%" 
-              maxWidth={window.innerWidth < 600 ? '100%' : 500}
+              maxWidth="600px"
               sx={{ 
-                aspectRatio: window.innerWidth < 600 ? '4/3' : '16/9',
-                maxHeight: window.innerWidth < 600 ? '60vh' : '400px'
+                aspectRatio: '4/3',
+                maxHeight: '500px',
+                borderRadius: 2,
+                overflow: 'hidden',
+                boxShadow: 3
               }}
             >
               <video
@@ -319,12 +328,11 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
                 style={{ 
                   width: '100%', 
                   height: '100%', 
-                  objectFit: 'cover',
-                  borderRadius: '8px'
+                  objectFit: 'cover'
                 }}
               />
               
-              {/* Full camera overlay with scanning effect */}
+              {/* Scanning overlay */}
               <Box
                 position="absolute"
                 top={0}
@@ -332,113 +340,85 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
                 right={0}
                 bottom={0}
                 sx={{
-                  background: 'rgba(0, 0, 0, 0.3)',
-                  borderRadius: window.innerWidth < 600 ? '0' : '8px',
+                  background: 'rgba(0, 0, 0, 0.4)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}
               >
-                {/* Scanning frame - responsive size */}
+                {/* Scanning frame */}
                 <Box
                   position="relative"
-                  width={window.innerWidth < 600 ? '280px' : '250px'}
-                  height={window.innerWidth < 600 ? '280px' : '250px'}
+                  width="250px"
+                  height="250px"
                   sx={{
                     border: '3px solid #1976d2',
-                    borderRadius: '12px',
+                    borderRadius: 2,
+                    boxShadow: '0 0 20px rgba(25, 118, 210, 0.5)',
                     '&::before': {
                       content: '""',
                       position: 'absolute',
-                      top: '-3px',
-                      left: '-3px',
-                      right: '-3px',
-                      bottom: '-3px',
-                      border: '3px solid #1976d2',
-                      borderRadius: '12px',
-                      animation: 'pulse 1.5s infinite',
-                      opacity: 0.7
-                    },
-                    '&::after': {
-                      content: '""',
-                      position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%)',
-                      width: window.innerWidth < 600 ? '24px' : '20px',
-                      height: window.innerWidth < 600 ? '24px' : '20px',
-                      background: '#1976d2',
-                      borderRadius: '50%',
-                      animation: 'pulse 0.8s infinite'
+                      top: '-6px',
+                      left: '-6px',
+                      right: '-6px',
+                      bottom: '-6px',
+                      border: '2px solid #1976d2',
+                      borderRadius: 2,
+                      animation: 'pulse 2s infinite',
+                      opacity: 0.6
                     }
                   }}
-                />
-                
-                {/* Corner indicators - responsive */}
-                <Box
-                  position="absolute"
-                  top="50%"
-                  left="50%"
-                  transform="translate(-50%, -50%)"
-                  width={window.innerWidth < 600 ? '280px' : '250px'}
-                  height={window.innerWidth < 600 ? '280px' : '250px'}
-                  sx={{
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: '10px',
-                      left: '10px',
-                      width: window.innerWidth < 600 ? '35px' : '30px',
-                      height: window.innerWidth < 600 ? '35px' : '30px',
+                >
+                  {/* Corner indicators */}
+                  <Box
+                    position="absolute"
+                    top="15px"
+                    left="15px"
+                    width="30px"
+                    height="30px"
+                    sx={{
                       borderTop: '4px solid #1976d2',
                       borderLeft: '4px solid #1976d2',
                       borderRadius: '4px 0 0 0'
-                    },
-                    '&::after': {
-                      content: '""',
-                      position: 'absolute',
-                      top: '10px',
-                      right: '10px',
-                      width: window.innerWidth < 600 ? '35px' : '30px',
-                      height: window.innerWidth < 600 ? '35px' : '30px',
+                    }}
+                  />
+                  <Box
+                    position="absolute"
+                    top="15px"
+                    right="15px"
+                    width="30px"
+                    height="30px"
+                    sx={{
                       borderTop: '4px solid #1976d2',
                       borderRight: '4px solid #1976d2',
                       borderRadius: '0 4px 0 0'
-                    }
-                  }}
-                />
-                <Box
-                  position="absolute"
-                  top="50%"
-                  left="50%"
-                  transform="translate(-50%, -50%)"
-                  width={window.innerWidth < 600 ? '280px' : '250px'}
-                  height={window.innerWidth < 600 ? '280px' : '250px'}
-                  sx={{
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      bottom: '10px',
-                      left: '10px',
-                      width: window.innerWidth < 600 ? '35px' : '30px',
-                      height: window.innerWidth < 600 ? '35px' : '30px',
+                    }}
+                  />
+                  <Box
+                    position="absolute"
+                    bottom="15px"
+                    left="15px"
+                    width="30px"
+                    height="30px"
+                    sx={{
                       borderBottom: '4px solid #1976d2',
                       borderLeft: '4px solid #1976d2',
                       borderRadius: '0 0 0 4px'
-                    },
-                    '&::after': {
-                      content: '""',
-                      position: 'absolute',
-                      bottom: '10px',
-                      right: '10px',
-                      width: window.innerWidth < 600 ? '35px' : '30px',
-                      height: window.innerWidth < 600 ? '35px' : '30px',
+                    }}
+                  />
+                  <Box
+                    position="absolute"
+                    bottom="15px"
+                    right="15px"
+                    width="30px"
+                    height="30px"
+                    sx={{
                       borderBottom: '4px solid #1976d2',
                       borderRight: '4px solid #1976d2',
                       borderRadius: '0 0 4px 0'
-                    }
-                  }}
-                />
+                    }}
+                  />
+                </Box>
               </Box>
               
               {/* Hidden canvas for QR detection */}
@@ -448,14 +428,13 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
               />
               
               <Typography 
-                variant="body2" 
+                variant="body1" 
                 textAlign="center" 
                 sx={{ 
-                  mt: 2, 
+                  mt: 3, 
                   color: 'text.secondary',
-                  fontWeight: 'bold',
-                  fontSize: window.innerWidth < 600 ? '0.9rem' : '0.875rem',
-                  px: window.innerWidth < 600 ? 1 : 0
+                  fontWeight: 500,
+                  px: 2
                 }}
               >
                 Poziționați QR code-ul în cadrul de scanare
@@ -475,74 +454,75 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
               variant="outlined"
               onClick={handleManualQR}
               fullWidth
-              sx={{ mt: 2 }}
+              sx={{ mt: 3, py: 1.5 }}
             >
               Introducere manuală QR code
             </Button>
           ) : (
-            <Box sx={{ mt: 2, width: '100%' }}>
+            <Box sx={{ mt: 3, width: '100%', maxWidth: 500 }}>
               <Typography 
-                variant="body2" 
+                variant="body1" 
                 sx={{ 
-                  mb: 1, 
+                  mb: 2, 
                   color: 'text.secondary',
-                  fontSize: window.innerWidth < 600 ? '0.9rem' : '0.875rem'
+                  textAlign: 'center'
                 }}
               >
                 Introduceți manual datele QR code:
               </Typography>
-              <Box display="flex" flexDirection={window.innerWidth < 600 ? 'column' : 'row'} gap={1}>
+              <Box display="flex" flexDirection="column" gap={2}>
                 <input
                   type="text"
                   value={manualInput}
                   onChange={handleManualInputChange}
                   placeholder="Introduceți QR code aici..."
                   style={{
-                    flex: 1,
-                    padding: window.innerWidth < 600 ? '14px' : '12px',
-                    border: '1px solid #ccc',
-                    borderRadius: '4px',
-                    fontSize: window.innerWidth < 600 ? '16px' : '14px',
-                    minHeight: window.innerWidth < 600 ? '48px' : 'auto'
+                    width: '100%',
+                    padding: '16px',
+                    border: '2px solid #e0e0e0',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    outline: 'none',
+                    transition: 'border-color 0.2s',
+                    boxSizing: 'border-box'
                   }}
+                  onFocus={(e) => e.target.style.borderColor = '#1976d2'}
+                  onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
                 />
-                <Button
-                  variant="contained"
-                  onClick={handleManualSubmit}
-                  disabled={!manualInput.trim()}
-                  sx={{ 
-                    minWidth: window.innerWidth < 600 ? '100%' : '100px',
-                    minHeight: window.innerWidth < 600 ? '48px' : 'auto'
-                  }}
-                >
-                  Procesează
-                </Button>
+                <Box display="flex" gap={2}>
+                  <Button
+                    variant="contained"
+                    onClick={handleManualSubmit}
+                    disabled={!manualInput.trim()}
+                    fullWidth
+                    sx={{ py: 1.5 }}
+                  >
+                    Procesează
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={() => setShowManualInput(false)}
+                    sx={{ py: 1.5 }}
+                  >
+                    Anulează
+                  </Button>
+                </Box>
               </Box>
-              <Button
-                variant="text"
-                onClick={() => setShowManualInput(false)}
-                sx={{ 
-                  mt: 1,
-                  fontSize: window.innerWidth < 600 ? '0.9rem' : '0.875rem'
-                }}
-              >
-                Înapoi la scanare
-              </Button>
             </Box>
           )}
         </Box>
       </DialogContent>
       <DialogActions sx={{ 
-        p: window.innerWidth < 600 ? 2 : 3,
-        flexDirection: window.innerWidth < 600 ? 'column' : 'row',
-        gap: window.innerWidth < 600 ? 1 : 0
+        p: 3,
+        gap: 2,
+        justifyContent: 'center'
       }}>
         <Button 
           onClick={handleClose}
-          fullWidth={window.innerWidth < 600}
+          variant="outlined"
           sx={{ 
-            minHeight: window.innerWidth < 600 ? '48px' : 'auto',
-            fontSize: window.innerWidth < 600 ? '1rem' : '0.875rem'
+            minWidth: 120,
+            py: 1.5
           }}
         >
           Anulează
@@ -551,10 +531,9 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
           onClick={startCamera} 
           variant="contained"
           disabled={scanning}
-          fullWidth={window.innerWidth < 600}
           sx={{ 
-            minHeight: window.innerWidth < 600 ? '48px' : 'auto',
-            fontSize: window.innerWidth < 600 ? '1rem' : '0.875rem'
+            minWidth: 120,
+            py: 1.5
           }}
         >
           {scanning ? 'Se scanează...' : 'Începe scanarea'}

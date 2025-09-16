@@ -22,14 +22,14 @@ const EventCheckInRedirect = () => {
   const [eventInfo, setEventInfo] = useState(null);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      setError('Trebuie să fii autentificat pentru a te înregistra la evenimente.');
+    if (!checkInCode) {
+      setError('Cod de eveniment invalid.');
       setLoading(false);
       return;
     }
 
-    if (!checkInCode) {
-      setError('Cod de eveniment invalid.');
+    if (!isAuthenticated) {
+      setError('Trebuie să fii autentificat pentru a te înregistra la evenimente.');
       setLoading(false);
       return;
     }
@@ -102,6 +102,10 @@ const EventCheckInRedirect = () => {
     }
   };
 
+  const handleLogin = () => {
+    navigate('/login');
+  };
+
   if (loading) {
     return (
       <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="60vh">
@@ -123,6 +127,18 @@ const EventCheckInRedirect = () => {
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {error}
+              {!isAuthenticated && (
+                <Box sx={{ mt: 2 }}>
+                  <Button
+                    variant="contained"
+                    onClick={handleLogin}
+                    fullWidth
+                    sx={{ mt: 1 }}
+                  >
+                    Autentificare
+                  </Button>
+                </Box>
+              )}
             </Alert>
           )}
           
@@ -146,29 +162,66 @@ const EventCheckInRedirect = () => {
             </Box>
           )}
 
+          {!isAuthenticated && !eventInfo && checkInCode && (
+            <Box sx={{ mb: 3, textAlign: 'center' }}>
+              <Typography variant="h6" gutterBottom>
+                Eveniment găsit!
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Pentru a te înregistra la acest eveniment, trebuie să te autentifici mai întâi.
+              </Typography>
+            </Box>
+          )}
+
           <Box display="flex" flexDirection="column" gap={2}>
-            <Button
-              variant="contained"
-              onClick={handleGoToDashboard}
-              fullWidth
-              size="large"
-            >
-              Mergi la Dashboard
-            </Button>
-            
-            <Button
-              variant="outlined"
-              onClick={handleGoToProfile}
-              fullWidth
-              size="large"
-            >
-              Vezi Profilul
-            </Button>
+            {isAuthenticated ? (
+              <>
+                <Button
+                  variant="contained"
+                  onClick={handleGoToDashboard}
+                  fullWidth
+                  size="large"
+                >
+                  Mergi la Dashboard
+                </Button>
+                
+                <Button
+                  variant="outlined"
+                  onClick={handleGoToProfile}
+                  fullWidth
+                  size="large"
+                >
+                  Vezi Profilul
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="contained"
+                  onClick={handleLogin}
+                  fullWidth
+                  size="large"
+                >
+                  Autentificare
+                </Button>
+                
+                <Button
+                  variant="outlined"
+                  onClick={() => navigate('/register')}
+                  fullWidth
+                  size="large"
+                >
+                  Înregistrare
+                </Button>
+              </>
+            )}
           </Box>
 
-          <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mt: 3 }}>
-            Înregistrarea a fost procesată cu succes!
-          </Typography>
+          {success && (
+            <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mt: 3 }}>
+              Înregistrarea a fost procesată cu succes!
+            </Typography>
+          )}
         </CardContent>
       </Card>
     </Box>
