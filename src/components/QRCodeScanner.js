@@ -156,12 +156,6 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
     setManualInput(event.target.value);
   };
 
-  const generateTestQR = () => {
-    // Generate a test QR code URL for debugging
-    const testUrl = 'https://crr-site.online/event-checkin/TEST123';
-    setManualInput(testUrl);
-    setShowManualInput(true);
-  };
 
   const processQRData = async (qrData) => {
     try {
@@ -285,15 +279,38 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-      <DialogTitle>{title}</DialogTitle>
-      <DialogContent>
+    <Dialog 
+      open={open} 
+      onClose={handleClose} 
+      maxWidth="sm" 
+      fullWidth
+      fullScreen={window.innerWidth < 600}
+      sx={{
+        '& .MuiDialog-paper': {
+          margin: window.innerWidth < 600 ? 0 : 16,
+          maxHeight: window.innerWidth < 600 ? '100vh' : '90vh',
+          borderRadius: window.innerWidth < 600 ? 0 : 8
+        }
+      }}
+    >
+      <DialogTitle sx={{ pb: 1, fontSize: window.innerWidth < 600 ? '1.1rem' : '1.25rem' }}>
+        {title}
+      </DialogTitle>
+      <DialogContent sx={{ p: window.innerWidth < 600 ? 2 : 3, pt: 1 }}>
         <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
-          {error && <Alert severity="error">{error}</Alert>}
-          {success && <Alert severity="success">{success}</Alert>}
+          {error && <Alert severity="error" sx={{ width: '100%' }}>{error}</Alert>}
+          {success && <Alert severity="success" sx={{ width: '100%' }}>{success}</Alert>}
           
           {scanning ? (
-            <Box position="relative" width="100%" maxWidth={600} sx={{ aspectRatio: '16/9' }}>
+            <Box 
+              position="relative" 
+              width="100%" 
+              maxWidth={window.innerWidth < 600 ? '100%' : 500}
+              sx={{ 
+                aspectRatio: window.innerWidth < 600 ? '4/3' : '16/9',
+                maxHeight: window.innerWidth < 600 ? '60vh' : '400px'
+              }}
+            >
               <video
                 ref={videoRef}
                 autoPlay
@@ -316,17 +333,17 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
                 bottom={0}
                 sx={{
                   background: 'rgba(0, 0, 0, 0.3)',
-                  borderRadius: '8px',
+                  borderRadius: window.innerWidth < 600 ? '0' : '8px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}
               >
-                {/* Scanning frame */}
+                {/* Scanning frame - responsive size */}
                 <Box
                   position="relative"
-                  width="250px"
-                  height="250px"
+                  width={window.innerWidth < 600 ? '280px' : '250px'}
+                  height={window.innerWidth < 600 ? '280px' : '250px'}
                   sx={{
                     border: '3px solid #1976d2',
                     borderRadius: '12px',
@@ -348,8 +365,8 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
                       top: '50%',
                       left: '50%',
                       transform: 'translate(-50%, -50%)',
-                      width: '20px',
-                      height: '20px',
+                      width: window.innerWidth < 600 ? '24px' : '20px',
+                      height: window.innerWidth < 600 ? '24px' : '20px',
                       background: '#1976d2',
                       borderRadius: '50%',
                       animation: 'pulse 0.8s infinite'
@@ -357,22 +374,22 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
                   }}
                 />
                 
-                {/* Corner indicators */}
+                {/* Corner indicators - responsive */}
                 <Box
                   position="absolute"
                   top="50%"
                   left="50%"
                   transform="translate(-50%, -50%)"
-                  width="250px"
-                  height="250px"
+                  width={window.innerWidth < 600 ? '280px' : '250px'}
+                  height={window.innerWidth < 600 ? '280px' : '250px'}
                   sx={{
                     '&::before': {
                       content: '""',
                       position: 'absolute',
                       top: '10px',
                       left: '10px',
-                      width: '30px',
-                      height: '30px',
+                      width: window.innerWidth < 600 ? '35px' : '30px',
+                      height: window.innerWidth < 600 ? '35px' : '30px',
                       borderTop: '4px solid #1976d2',
                       borderLeft: '4px solid #1976d2',
                       borderRadius: '4px 0 0 0'
@@ -382,29 +399,29 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
                       position: 'absolute',
                       top: '10px',
                       right: '10px',
-                      width: '30px',
-                      height: '30px',
+                      width: window.innerWidth < 600 ? '35px' : '30px',
+                      height: window.innerWidth < 600 ? '35px' : '30px',
                       borderTop: '4px solid #1976d2',
                       borderRight: '4px solid #1976d2',
                       borderRadius: '0 4px 0 0'
                     }
                   }}
-              />
-              <Box
-                position="absolute"
-                top="50%"
-                left="50%"
-                transform="translate(-50%, -50%)"
-                  width="250px"
-                  height="250px"
-                sx={{
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
+                />
+                <Box
+                  position="absolute"
+                  top="50%"
+                  left="50%"
+                  transform="translate(-50%, -50%)"
+                  width={window.innerWidth < 600 ? '280px' : '250px'}
+                  height={window.innerWidth < 600 ? '280px' : '250px'}
+                  sx={{
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
                       bottom: '10px',
                       left: '10px',
-                      width: '30px',
-                      height: '30px',
+                      width: window.innerWidth < 600 ? '35px' : '30px',
+                      height: window.innerWidth < 600 ? '35px' : '30px',
                       borderBottom: '4px solid #1976d2',
                       borderLeft: '4px solid #1976d2',
                       borderRadius: '0 0 0 4px'
@@ -414,8 +431,8 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
                       position: 'absolute',
                       bottom: '10px',
                       right: '10px',
-                      width: '30px',
-                      height: '30px',
+                      width: window.innerWidth < 600 ? '35px' : '30px',
+                      height: window.innerWidth < 600 ? '35px' : '30px',
                       borderBottom: '4px solid #1976d2',
                       borderRight: '4px solid #1976d2',
                       borderRadius: '0 0 4px 0'
@@ -436,7 +453,9 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
                 sx={{ 
                   mt: 2, 
                   color: 'text.secondary',
-                  fontWeight: 'bold'
+                  fontWeight: 'bold',
+                  fontSize: window.innerWidth < 600 ? '0.9rem' : '0.875rem',
+                  px: window.innerWidth < 600 ? 1 : 0
                 }}
               >
                 Poziționați QR code-ul în cadrul de scanare
@@ -452,28 +471,27 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
           )}
           
           {!showManualInput ? (
-            <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
-          <Button
-            variant="outlined"
-            onClick={handleManualQR}
-            fullWidth
-          >
-            Introducere manuală QR code
-          </Button>
-              <Button
-                variant="outlined"
-                onClick={generateTestQR}
-                sx={{ minWidth: '120px' }}
-              >
-                Test QR
-              </Button>
-            </Box>
+            <Button
+              variant="outlined"
+              onClick={handleManualQR}
+              fullWidth
+              sx={{ mt: 2 }}
+            >
+              Introducere manuală QR code
+            </Button>
           ) : (
             <Box sx={{ mt: 2, width: '100%' }}>
-              <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary' }}>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  mb: 1, 
+                  color: 'text.secondary',
+                  fontSize: window.innerWidth < 600 ? '0.9rem' : '0.875rem'
+                }}
+              >
                 Introduceți manual datele QR code:
               </Typography>
-              <Box display="flex" gap={1}>
+              <Box display="flex" flexDirection={window.innerWidth < 600 ? 'column' : 'row'} gap={1}>
                 <input
                   type="text"
                   value={manualInput}
@@ -481,17 +499,21 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
                   placeholder="Introduceți QR code aici..."
                   style={{
                     flex: 1,
-                    padding: '12px',
+                    padding: window.innerWidth < 600 ? '14px' : '12px',
                     border: '1px solid #ccc',
                     borderRadius: '4px',
-                    fontSize: '14px'
+                    fontSize: window.innerWidth < 600 ? '16px' : '14px',
+                    minHeight: window.innerWidth < 600 ? '48px' : 'auto'
                   }}
                 />
                 <Button
                   variant="contained"
                   onClick={handleManualSubmit}
                   disabled={!manualInput.trim()}
-                  sx={{ minWidth: '100px' }}
+                  sx={{ 
+                    minWidth: window.innerWidth < 600 ? '100%' : '100px',
+                    minHeight: window.innerWidth < 600 ? '48px' : 'auto'
+                  }}
                 >
                   Procesează
                 </Button>
@@ -499,7 +521,10 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
               <Button
                 variant="text"
                 onClick={() => setShowManualInput(false)}
-                sx={{ mt: 1 }}
+                sx={{ 
+                  mt: 1,
+                  fontSize: window.innerWidth < 600 ? '0.9rem' : '0.875rem'
+                }}
               >
                 Înapoi la scanare
               </Button>
@@ -507,14 +532,30 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
           )}
         </Box>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose}>
+      <DialogActions sx={{ 
+        p: window.innerWidth < 600 ? 2 : 3,
+        flexDirection: window.innerWidth < 600 ? 'column' : 'row',
+        gap: window.innerWidth < 600 ? 1 : 0
+      }}>
+        <Button 
+          onClick={handleClose}
+          fullWidth={window.innerWidth < 600}
+          sx={{ 
+            minHeight: window.innerWidth < 600 ? '48px' : 'auto',
+            fontSize: window.innerWidth < 600 ? '1rem' : '0.875rem'
+          }}
+        >
           Anulează
         </Button>
         <Button 
           onClick={startCamera} 
           variant="contained"
           disabled={scanning}
+          fullWidth={window.innerWidth < 600}
+          sx={{ 
+            minHeight: window.innerWidth < 600 ? '48px' : 'auto',
+            fontSize: window.innerWidth < 600 ? '1rem' : '0.875rem'
+          }}
         >
           {scanning ? 'Se scanează...' : 'Începe scanarea'}
         </Button>
