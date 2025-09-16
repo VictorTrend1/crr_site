@@ -11,11 +11,14 @@ import {
   CircularProgress
 } from '@mui/material';
 import { checkInWithQR } from '../api';
+import jsQR from 'jsqr';
 
 const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) => {
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [manualInput, setManualInput] = useState('');
+  const [showManualInput, setShowManualInput] = useState(false);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const canvasRef = useRef(null);
@@ -101,9 +104,16 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
   };
 
   const detectQRPattern = (imageData) => {
-    // This is a simplified QR detection
-    // In a real implementation, you'd use a library like jsQR or qr-scanner
-    // For now, we'll return null and rely on manual input
+    // Use jsQR library for proper QR code detection
+    try {
+      const code = jsQR(imageData.data, imageData.width, imageData.height);
+      if (code) {
+        console.log('QR Code detected:', code.data);
+        return code.data;
+      }
+    } catch (err) {
+      console.log('QR detection error:', err);
+    }
     return null;
   };
 
@@ -127,16 +137,56 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
   };
 
   const handleManualQR = () => {
-    const qrData = prompt('Introduceți datele QR code:');
-    if (qrData) {
-      processQRData(qrData);
+    setShowManualInput(true);
+  };
+
+  const handleManualSubmit = () => {
+    if (manualInput.trim()) {
+      processQRData(manualInput.trim());
     }
+  };
+
+  const handleManualInputChange = (event) => {
+    setManualInput(event.target.value);
   };
 
   const processQRData = async (qrData) => {
     try {
       setError('');
       setSuccess('');
+      
+      // Check if it's a redirecting URL
+      if (qrData.includes('backend.crr-site.online/api/events/qr/')) {
+        // Extract check-in code from URL
+        const checkInCodeMatch = qrData.match(/\/qr\/([a-fA-F0-9]+)/);
+        if (checkInCodeMatch) {
+          const checkInCode = checkInCodeMatch[1];
+          const qrDataForAPI = JSON.stringify({
+            checkInCode: checkInCode,
+            type: 'event_checkin'
+          });
+          
+          // Process with API
+          const response = await checkInWithQR(qrDataForAPI);
+          
+          if (response.data.autoRegistered) {
+            setSuccess('Te-ai înregistrat automat la eveniment!');
+          } else if (response.data.completedPartialRegistration) {
+            setSuccess('Înregistrarea a fost completată cu succes!');
+          } else if (response.data.wasAlreadyRegistered) {
+            setSuccess('Erai deja înregistrat la acest eveniment!');
+          } else {
+            setSuccess(response.data.msg);
+          }
+          
+          if (onSuccess) {
+            onSuccess(response.data);
+          }
+          
+          setTimeout(() => handleClose(), 3000);
+          return;
+        }
+      }
       
       // Try to parse QR data to determine type
       let qrInfo;
@@ -355,14 +405,52 @@ const QRCodeScanner = ({ open, onClose, onSuccess, title = "Scanare QR Code" }) 
             </Box>
           )}
           
-          <Button
-            variant="outlined"
-            onClick={handleManualQR}
-            fullWidth
-            sx={{ mt: 2 }}
-          >
-            Introducere manuală QR code
-          </Button>
+          {!showManualInput ? (
+            <Button
+              variant="outlined"
+              onClick={handleManualQR}
+              fullWidth
+              sx={{ mt: 2 }}
+            >
+              Introducere manuală QR code
+            </Button>
+          ) : (
+            <Box sx={{ mt: 2, width: '100%' }}>
+              <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary' }}>
+                Introduceți manual datele QR code:
+              </Typography>
+              <Box display="flex" gap={1}>
+                <input
+                  type="text"
+                  value={manualInput}
+                  onChange={handleManualInputChange}
+                  placeholder="Introduceți QR code aici..."
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    border: '1px solid #ccc',
+                    borderRadius: '4px',
+                    fontSize: '14px'
+                  }}
+                />
+                <Button
+                  variant="contained"
+                  onClick={handleManualSubmit}
+                  disabled={!manualInput.trim()}
+                  sx={{ minWidth: '100px' }}
+                >
+                  Procesează
+                </Button>
+              </Box>
+              <Button
+                variant="text"
+                onClick={() => setShowManualInput(false)}
+                sx={{ mt: 1 }}
+              >
+                Înapoi la scanare
+              </Button>
+            </Box>
+          )}
         </Box>
       </DialogContent>
       <DialogActions>
