@@ -3,7 +3,7 @@ import axios from 'axios';
 // Determine API base URL based on environment
 const getApiBaseUrl = () => {
   if (process.env.NODE_ENV === 'production') {
-    return 'https://backend.crr-site.online/api';
+    return 'http://81.181.166.53/api';
   } else {
     // Development environment - use localhost backend
     return 'http://localhost:5000/api';
